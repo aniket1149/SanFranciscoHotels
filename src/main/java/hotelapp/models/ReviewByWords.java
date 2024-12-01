@@ -37,6 +37,10 @@ public class ReviewByWords implements Comparable<ReviewByWords> {
     public String getReview() {
         return review.toString();
     }
+
+    public String getReviewId() {
+        return review.getReviewId();
+    }
     public ReviewDTO getReviewObject() {
         return this.review;
     }
