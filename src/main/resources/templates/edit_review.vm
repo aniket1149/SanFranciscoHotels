@@ -1,0 +1,17 @@
+<html>
+<head>
+    <title>Edit Review</title>
+</head>
+<body>
+<h1>Edit Review for Hotel ID: $review.hotelId</h1>
+<form action="/review/edit" method="post">
+    <input type="hidden" name="reviewId" value="$review.reviewId"/>
+    <label for="title">Title:</label><br>
+    <input type="text" name="title" value="$review.title" required/><br>
+    <label for="reviewText">Text:</label><br>
+    <textarea name="reviewText" required>$review.reviewText</textarea><br><br>
+    <input type="submit" value="Update Review"/>
+</form>
+<p><a href="/hotel/$review.hotelId">Back to Hotel Details</a></p>
+</body>
+</html>
