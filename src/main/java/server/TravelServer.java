@@ -28,22 +28,27 @@ public class TravelServer {
     public void addServlets(List<Object> objs){
         handler.setContextPath("/");
         handler.addServlet(UserServlet.class, "/user/*");
-        handler.addServlet(SearchServlet.class, "/search/*");
-       // handler.addFilter(LoginFilter.class, "/*", null);
+        HotelCollection hotelCollection = null;
+        ThreadSafeInvertedIndex reviewCollection=null;
+        // handler.addFilter(LoginFilter.class, "/*", null);
         for(Object obj : objs){
             if(obj instanceof HotelCollection){
-                handler.addServlet(new ServletHolder(new HotelServlet((HotelCollection) obj)),"/hotel/*");
+                hotelCollection = (HotelCollection) obj;
+                handler.addServlet(new ServletHolder(new SearchServlet((HotelCollection) obj)), "/search/*");
             }else if(obj instanceof ThreadSafeInvertedIndex){
-                ReviewServlet reviewServlet = new ReviewServlet((ThreadSafeInvertedIndex) obj);
+                reviewCollection = (ThreadSafeInvertedIndex) obj;
+                ReviewServlet reviewServlet = new ReviewServlet(reviewCollection);
                 ServletHolder reviewServletHolder = new ServletHolder(reviewServlet);
                 handler.addServlet(reviewServletHolder, "/review/*");
             }else{
                 logger.error("Error intializing the servlets");
                 return;
             }
+
         }
-
-
+        if(hotelCollection != null && reviewCollection != null){
+            handler.addServlet(new ServletHolder(new HotelServlet(hotelCollection, reviewCollection)), "/hotel/*");
+        }
     }
 
     public void start() throws Exception {

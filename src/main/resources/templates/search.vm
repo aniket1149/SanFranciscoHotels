@@ -1,0 +1,31 @@
+<html>
+<head>
+    <title>Hotel Search</title>
+</head>
+<body>
+<h1>Hotel Search</h1>
+
+<!-- Search Form -->
+<form action="/search" method="get">
+    <input type="text" name="query" placeholder="Enter hotel ID or name" value="$!{param.query}" required/>
+    <br/>
+    <label>
+        <input type="radio" name="searchType" value="id" #if($!{param.searchType} == "id")checked#end/> Search by ID
+    </label>
+    <label>
+        <input type="radio" name="searchType" value="name" #if($!{param.searchType} == "name")checked#end/> Search by Name
+    </label>
+    <br/>
+    <input type="submit" value="Search"/>
+</form>
+
+    #if($results)
+    <h2>Search Results</h2>
+    <ul>
+        #foreach($hotel in $results)
+            <li><a href="/hotel/$hotel.id">$hotel.name</a></li>
+        #end
+    </ul>
+    #end
+</body>
+</html>

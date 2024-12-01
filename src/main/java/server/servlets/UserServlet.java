@@ -75,7 +75,7 @@ public class UserServlet extends HttpServlet {
             if (PasswordUtil.verifyPassword(password, user.getHashedPassword(), user.getSalt())) {
                 HttpSession session = request.getSession();
                 session.setAttribute("user", user);
-                response.sendRedirect("/review/view");
+                response.sendRedirect("/search/");
                 return;
             }
         }

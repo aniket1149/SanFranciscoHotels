@@ -1,0 +1,50 @@
+<html>
+<head>
+    <title>$hotel.name</title>
+</head>
+<body>
+<h1>$hotel.name</h1>
+<p>ID: $hotel.id</p>
+<p>Address: $hotel.streetAddress, $hotel.city, $hotel.state</p>
+<p>Average Rating: $averageRating</p>
+<p><a href="$expediaLink">View on Expedia</a></p>
+
+<h2>Reviews</h2>
+#if($reviews.size() == 0)
+<p>No reviews yet.</p>
+#else
+<ul>
+#foreach($review in $reviews)
+    <li>
+        <p>Rating: $review.ratingOverall</p>
+        <p>$review.title</p>
+        <p>$review.reviewText</p>
+        <p>By $review.userNickname on $review.reviewSubmissionDate</p>
+        #if($review.userNickname == $session.getAttribute("user").username)
+            <a href="/review/edit?id=$review.id">Edit</a>
+            <form action="/review/delete" method="post" style="display:inline;">
+                <input type="hidden" name="id" value="$review.id"/>
+                <input type="submit" value="Delete"/>
+            </form>
+        #end
+    </li>
+#end
+</ul>
+#end
+<h3>Add a Review</h3>
+<form action="/review/add" method="post">
+    <input type="hidden" name="hotelId" value="$hotel.id"/>
+    <label for="title">Title:</label><br>
+    <input type="text" name="title" required/><br>
+    <label for="text">Text:</label><br>
+    <textarea name="text" required></textarea><br>
+    <label for="rating">Rating:</label><br>
+    <select name="rating">
+        #foreach($i in [1..5])
+            <option value="$i">$i</option>
+        #end
+    </select><br><br>
+    <input type="submit" value="Submit Review"/>
+</form>
+</body>
+</html>
