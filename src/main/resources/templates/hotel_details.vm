@@ -20,10 +20,11 @@
         <p>$review.title</p>
         <p>$review.reviewText</p>
         <p>By $review.userNickname on $review.reviewSubmissionDate</p>
-        #if($review.userNickname == $session.getAttribute("user").username)
-            <a href="/review/edit?id=$review.id">Edit</a>
+        #if($review.userNickname == $loggedInUser)
+            <a href="/review/edit?id=$review.reviewId">Edit</a>
             <form action="/review/delete" method="post" style="display:inline;">
-                <input type="hidden" name="id" value="$review.id"/>
+                <input type="hidden" name="reviewId" value="$review.reviewId"/>
+                <input type="hidden" name="hotelId" value="$review.hotelId"/>
                 <input type="submit" value="Delete"/>
             </form>
         #end

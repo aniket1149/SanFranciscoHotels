@@ -4,10 +4,12 @@ import hotelapp.controller.HotelCollection;
 import hotelapp.controller.ThreadSafeInvertedIndex;
 import hotelapp.models.HotelDTO;
 import hotelapp.models.ReviewDTO;
+import hotelapp.models.User;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 import server.utils.VelocityTemplateEngine;
 
 import java.io.IOException;
@@ -40,6 +42,8 @@ public class HotelServlet extends HttpServlet {
             response.sendError(HttpServletResponse.SC_NOT_FOUND, "Hotel not found");
             return;
         }
+        HttpSession session = request.getSession();
+        User user = (User) session.getAttribute("user");
         Set<ReviewDTO> reviewDTOS = reviewCollection.getReviewByHotelId(hotelId);
         double averageRating = calculateAverageRating(reviewDTOS);
         String expediaLink = generateExpediaLink(hotel);
@@ -48,6 +52,7 @@ public class HotelServlet extends HttpServlet {
         model.put("reviews", reviewDTOS);
         model.put("averageRating", averageRating);
         model.put("expediaLink", expediaLink);
+        model.put("loggedInUser", user.getUsername());
 
         templateEngine.render("templates/hotel_details.vm", model, response);
     }
