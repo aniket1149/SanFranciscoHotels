@@ -55,10 +55,42 @@ public class ThreadSafeInvertedIndex extends InvertedIndex{
     }
 
     @Override
+    public String getUserName(String reviewId) {
+        lock.readLock().lock();
+        try {
+            return super.getUserName(reviewId);
+        }finally {
+            lock.readLock().unlock();
+        }
+    }
+
+
+
+    @Override
     public String findWordInReviews(String query){
         lock.readLock().lock();
         try {
             return super.findWordInReviews(query);
+        }finally {
+            lock.readLock().unlock();
+        }
+    }
+
+    @Override
+    public boolean updateReview(String reviewId, ReviewDTO newReview) {
+        lock.writeLock().lock();
+        try {
+            return super.updateReview(reviewId, newReview);
+        }finally {
+            lock.writeLock().unlock();
+        }
+    }
+
+    @Override
+    public ReviewDTO editableReview(String reviewId){
+        lock.readLock().lock();
+        try {
+            return super.editableReview(reviewId);
         }finally {
             lock.readLock().unlock();
         }
