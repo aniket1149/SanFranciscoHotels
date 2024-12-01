@@ -1,7 +1,9 @@
 package hotelapp.models;
 
-import java.time.LocalDate;
+import lombok.Data;
 
+import java.time.LocalDate;
+@Data
 public class ReviewDTO implements Comparable<ReviewDTO> {
     private String hotelId;
     private String reviewId;
@@ -37,6 +39,19 @@ public class ReviewDTO implements Comparable<ReviewDTO> {
 
     public String getHotelId() {
         return hotelId;
+    }
+
+    public ReviewDTO(){
+
+    }
+
+    public ReviewDTO(ReviewDTO duplicate){
+        this.hotelId = duplicate.getHotelId();
+        this.reviewId = duplicate.getReviewId();
+        this.userNickname = duplicate.getUserNickname();
+        this.title = duplicate.getTitle();
+        this.reviewText = duplicate.getReviewText();
+        this.reviewSubmissionDate = duplicate.getReviewSubmissionDate();
     }
 
     @Override
