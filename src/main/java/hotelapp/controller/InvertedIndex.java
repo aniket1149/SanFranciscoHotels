@@ -4,6 +4,7 @@ import hotelapp.models.ReviewByWords;
 import hotelapp.models.ReviewDTO;
 import hotelapp.models.StopWords;
 
+import java.time.LocalDate;
 import java.util.*;
 
 /*
@@ -15,10 +16,14 @@ wordInvertedindex : maps non-STOP_WORDS from all reviews files and maintains a s
 public class InvertedIndex {
     private TreeMap<String, TreeSet<ReviewDTO>> hotelIdReviewMap;
     private HashMap<String, TreeSet<ReviewByWords>> wordInvertedIndex ;
+    private Set<String> deletedReviewIds;
+    private TreeMap<String, ReviewDTO> reviewIdMap;
 
     public InvertedIndex() {
         hotelIdReviewMap = new TreeMap<>((a,b)->b.compareTo(a));
         wordInvertedIndex = new HashMap<>();
+        deletedReviewIds = new HashSet<>();
+        reviewIdMap = new TreeMap<>();
     }
 
     public InvertedIndex(Set<ReviewDTO> reviews) {
@@ -46,9 +51,17 @@ public class InvertedIndex {
 
     protected void initializeHotelIdReviewMap(Set<ReviewDTO> reviews) {
         for(ReviewDTO review : reviews) {
+            reviewIdMap.put(review.getReviewId(), review);
             hotelIdReviewMap.computeIfAbsent(review.getHotelId(), k -> new TreeSet<>()).add(review);
             initializeInvertedIndex(review);
+
         }
+    }
+
+    protected String getUserName(String reviewId) {
+        if(reviewIdMap.containsKey(reviewId))
+            return reviewIdMap.get(reviewId).getUserNickname();
+        return null;
     }
 
     protected Set<ReviewDTO> getReviewByHotelId(String hotelId) {
@@ -75,9 +88,19 @@ public class InvertedIndex {
         StringBuilder stringBuilder = new StringBuilder();
         if(null == reviews) return "No such word exists in any reviews.";
         for(ReviewByWords revWords : reviews){
+            if(deletedReviewIds.contains(revWords.getReviewObject().getReviewId())){
+                continue;
+            }
             stringBuilder.append("--------------------"+ System.lineSeparator() + revWords.getFrequency() + System.lineSeparator());
             stringBuilder.append(revWords.getReview().toString());
 
+        }
+        TreeSet<ReviewByWords> newReviews = wordInvertedIndex.get(queryPart);
+        TreeSet<ReviewByWords> oldReviews = wordInvertedIndex.get(queryPart);
+        for(ReviewByWords revWords : oldReviews){
+            if(deletedReviewIds.contains(revWords.getReviewId())){
+                newReviews.remove(revWords);
+            }
         }
         return stringBuilder.toString();
     }
@@ -90,5 +113,44 @@ public class InvertedIndex {
             result.add(revWords.getReviewObject());
         }
         return result;
+    }
+
+    public boolean deleteReview(String hotelId, String reviewId) {
+        boolean result = false;
+        ReviewDTO targetReview = null;
+        if(hotelIdReviewMap.containsKey(hotelId)) {
+            TreeSet<ReviewDTO> reviews = hotelIdReviewMap.get(hotelId);
+            for(ReviewDTO review : reviews) {
+                if(review.getReviewId().equals(reviewId)) {
+                    targetReview = review;
+                    deletedReviewIds.add(reviewId);
+                }
+            }
+            reviews.remove(targetReview);
+        }
+        return targetReview != null;
+    }
+
+    protected boolean updateReview(String reviewId, ReviewDTO newReview) {
+        ReviewDTO targetReview = null;
+        if(reviewIdMap.containsKey(reviewId)) {
+            targetReview = reviewIdMap.get(reviewId);
+        }
+        if(null == targetReview) {return false;}
+        if(targetReview.getReviewText() != newReview.getReviewText()) {
+            targetReview.setReviewText(newReview.getReviewText());
+        }
+        if(targetReview.getTitle() != newReview.getTitle()) {
+            targetReview.setTitle(newReview.getTitle());
+        }
+        targetReview.setReviewSubmissionDate(LocalDate.now().toString());
+        return true;
+    }
+
+    protected ReviewDTO editableReview(String reviewId) {
+        if(reviewIdMap.containsKey(reviewId)) {
+            return new ReviewDTO(reviewIdMap.get(reviewId));
+        }
+        return null;
     }
 }
