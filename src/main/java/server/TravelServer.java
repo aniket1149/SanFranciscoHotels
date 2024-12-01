@@ -22,13 +22,14 @@ public class TravelServer {
     public TravelServer() {
         jettyServer = new Server(PORT);
         handler = new ServletContextHandler(ServletContextHandler.SESSIONS);
+        jettyServer.setHandler(handler);
     }
 
     public void addServlets(List<Object> objs){
         handler.setContextPath("/");
         handler.addServlet(UserServlet.class, "/user/*");
         handler.addServlet(SearchServlet.class, "/search/*");
-        handler.addFilter(LoginFilter.class, "/*", null);
+       // handler.addFilter(LoginFilter.class, "/*", null);
         for(Object obj : objs){
             if(obj instanceof HotelCollection){
                 handler.addServlet(new ServletHolder(new HotelServlet((HotelCollection) obj)),"/hotel/*");
@@ -42,11 +43,11 @@ public class TravelServer {
             }
         }
 
+
     }
 
     public void start() throws Exception {
         // FILL IN CODE: run the jetty server (call start and join)
-        jettyServer.setHandler(handler);
         jettyServer.start();
         jettyServer.join();
     }

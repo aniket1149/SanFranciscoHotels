@@ -1,0 +1,22 @@
+<html>
+<head>
+    <title>Login</title>
+</head>
+<body>
+<h1>Login</h1>
+    #if($error)
+    <p style="color:red;">$error</p>
+    #end
+    #if($msg)
+    <p style="color:green;">$msg</p>
+    #end
+<form action="/user/login" method="post">
+    <label>Username:</label><br>
+    <input type="text" name="username"/><br>
+    <label>Password:</label><br>
+    <input type="password" name="password"/><br><br>
+    <input type="submit" value="Login"/>
+</form>
+<p>Don't have an account? <a href="/user/register">Register here</a></p>
+</body>
+</html>

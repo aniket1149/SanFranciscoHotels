@@ -1,0 +1,19 @@
+<html>
+<head>
+    <title>Register</title>
+</head>
+<body>
+<h1>Register</h1>
+    #if($error)
+    <p style="color:red;">$error</p>
+    #end
+<form action="/user/register" method="post">
+    <label>Username:</label><br>
+    <input type="text" name="username"/><br>
+    <label>Password:</label><br>
+    <input type="password" name="password"/><br><br>
+    <input type="submit" value="Register"/>
+</form>
+<p>Already have an account? <a href="/user/login">Login here</a></p>
+</body>
+</html>
