@@ -34,7 +34,6 @@ public class UserServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         String action = request.getPathInfo();
-        System.out.println(action);
         logger.info(" GET action: " + action);
         if (action == null) action = "/login";
         switch (action) {
