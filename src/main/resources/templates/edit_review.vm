@@ -3,6 +3,12 @@
     <title>Edit Review</title>
 </head>
 <body>
+<p>
+    #if($session.getAttribute("user"))
+        #set($currentUser = $session.getAttribute("user"))
+        <span style="color: cornflowerblue"> $currentUser.username </span> Update your views,
+    #end
+</p>
 <h1>Edit Review for Hotel ID: $review.hotelId</h1>
 <form action="/review/edit" method="post">
     <input type="hidden" name="reviewId" value="$review.reviewId"/>
@@ -13,5 +19,9 @@
     <input type="submit" value="Update Review"/>
 </form>
 <p><a href="/hotel/$review.hotelId">Back to Hotel Details</a></p>
+
+<br>
+<br>
+<a href="/user/logout">Logout</a>
 </body>
 </html>

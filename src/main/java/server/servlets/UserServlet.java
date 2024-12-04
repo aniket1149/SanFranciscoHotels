@@ -18,12 +18,18 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
-@WebServlet(name = "UserServlet", urlPatterns = {"/user/*"})
+/**
+ * User servlet handles the login, register endpoints for the server.
+ * **/
+
 public class UserServlet extends HttpServlet {
     private VelocityTemplateEngine templateEngine = new VelocityTemplateEngine();
     private UserRepository userRepository = new UserRepositoryImpl();
     private static final Logger logger = LogManager.getLogger(UserServlet.class);
-
+    /**
+     * GET handles the login functionality and directs based on the action like user/login, user/register, user/logout.
+     * @param request should contain query and searchType = id or name
+     * */
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         String action = request.getPathInfo();
@@ -32,10 +38,10 @@ public class UserServlet extends HttpServlet {
         if (action == null) action = "/login";
         switch (action) {
             case "/login":
-                templateEngine.render("templates/login.vm", new HashMap<>(), response);
+                templateEngine.render("templates/login.vm", new HashMap<>(), request, response);
                 break;
             case "/register":
-                templateEngine.render("templates/register.vm", new HashMap<>(), response);
+                templateEngine.render("templates/register.vm", new HashMap<>(), request, response);
                 break;
             case "/logout":
                 HttpSession session = request.getSession();
@@ -48,7 +54,10 @@ public class UserServlet extends HttpServlet {
                 response.sendError(HttpServletResponse.SC_NOT_FOUND);
         }
     }
-
+    /**
+     * POST
+     * @param request should contain query and searchType = id or name
+     * */
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         String action = request.getPathInfo();
@@ -60,6 +69,13 @@ public class UserServlet extends HttpServlet {
                 break;
             case "/register":
                 handleRegister(request,response);
+                break;
+            case "/logout":
+                HttpSession session = request.getSession();
+                if(session != null) {
+                    session.invalidate();
+                }
+                response.sendRedirect("/user/login");
                 break;
             default:
                 response.sendError(HttpServletResponse.SC_NOT_FOUND);
@@ -81,7 +97,7 @@ public class UserServlet extends HttpServlet {
         }
         Map<String, Object> model = new HashMap<>();
         model.put("error", "Invalid Username or Password");
-        templateEngine.render("templates/login.vm", model, response);
+        templateEngine.render("templates/login.vm", model,request, response);
     }
 
     private void handleRegister(HttpServletRequest request, HttpServletResponse response) throws IOException {
@@ -90,12 +106,12 @@ public class UserServlet extends HttpServlet {
         Map<String, Object> model = new HashMap<>();
         if (username == null || username.isEmpty() || password == null || password.isEmpty()) {
             model.put("error", "Username and password cannot be empty.");
-            templateEngine.render("templates/register.vm", model, response);
+            templateEngine.render("templates/register.vm", model,request, response);
             return;
         }
         if(userRepository.findByUsername(username) != null) {
             model.put("error", "Username is already in use.");
-            templateEngine.render("templates/register.vm", model, response);
+            templateEngine.render("templates/register.vm", model,request, response);
             return;
         }
         String salt = PasswordUtil.generateSalt();
@@ -106,7 +122,7 @@ public class UserServlet extends HttpServlet {
             response.sendRedirect("/user/login");
         }else{
             model.put("error", "Something went wrong, try again");
-            templateEngine.render("templates/register.vm", model, response);
+            templateEngine.render("templates/register.vm", model, request, response);
         }
     }
 

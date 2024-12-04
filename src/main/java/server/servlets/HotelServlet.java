@@ -13,10 +13,13 @@ import jakarta.servlet.http.HttpSession;
 import server.utils.VelocityTemplateEngine;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
-
+/**
+ * holds the functionality for Hotel server. Maps to -> /hotel/*
+ */
 public class HotelServlet extends HttpServlet {
     private HotelCollection hotelCollection;
     private ThreadSafeInvertedIndex reviewCollection;
@@ -28,7 +31,9 @@ public class HotelServlet extends HttpServlet {
         this.hotelCollection = hotelCollection;
         this.reviewCollection = reviewCollection;
     }
-
+    /**
+     * Gets the hotel based on the hotelId. Along with the reviews.
+     * */
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         String pathInfo = request.getPathInfo();
@@ -43,18 +48,23 @@ public class HotelServlet extends HttpServlet {
             return;
         }
         HttpSession session = request.getSession();
-        User user = (User) session.getAttribute("user");
+        User user = null;
+
+        if((user = (User) session.getAttribute("user")) == null) {
+            response.sendRedirect("/user/login");
+            return;
+        }
         Set<ReviewDTO> reviewDTOS = reviewCollection.getReviewByHotelId(hotelId);
         double averageRating = calculateAverageRating(reviewDTOS);
         String expediaLink = generateExpediaLink(hotel);
         Map<String, Object> model = new HashMap<>();
         model.put("hotel", hotel);
-        model.put("reviews", reviewDTOS);
+        model.put("reviews", (reviewDTOS!=null) ? reviewDTOS : new ArrayList<>() );
         model.put("averageRating", averageRating);
         model.put("expediaLink", expediaLink);
         model.put("loggedInUser", user.getUsername());
 
-        templateEngine.render("templates/hotel_details.vm", model, response);
+        templateEngine.render("templates/hotel_details.vm", model, request, response);
     }
 
     private String generateExpediaLink(HotelDTO hotel) {
@@ -64,7 +74,7 @@ public class HotelServlet extends HttpServlet {
     }
 
     private double calculateAverageRating(Set<ReviewDTO> reviews) {
-        if (reviews.isEmpty()) return 0.0;
+        if (reviews == null || reviews.isEmpty()) return 0.0;
         double sum = 0.0;
         for (ReviewDTO review : reviews) {
             sum+= Double.valueOf(review.getRatingOverall());

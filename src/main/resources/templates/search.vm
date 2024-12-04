@@ -3,11 +3,20 @@
     <title>Hotel Search</title>
 </head>
 <body>
+<p>
+    #if($session.getAttribute("user"))
+        #set($currentUser = $session.getAttribute("user"))
+        Welcome,  $currentUser.username !!
+    #end
+</p>
+
 <h1>Hotel Search</h1>
+
 
 <!-- Search Form -->
 <form action="/search" method="get">
-    <input type="text" name="query" placeholder="Enter hotel ID or name" value="$!{param.query}" required/>
+
+    <input type="text" name="query" placeholder="Enter hotel ID or name"  required/>
     <br/>
     <label>
         <input type="radio" name="searchType" value="id" #if($!{param.searchType} == "id")checked#end/> Search by ID
@@ -27,5 +36,9 @@
         #end
     </ul>
     #end
+
+<br>
+<br>
+<a href="/user/logout">Logout</a>
 </body>
 </html>

@@ -11,7 +11,7 @@
     <label>Username:</label><br>
     <input type="text" name="username"/><br>
     <label>Password:</label><br>
-    <input type="password" name="password"/><br><br>
+    <input type="password" id="password" name="password" pattern="(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}" title="Password pattern not match atleast 8 char long, 1 Small letter, 1 Capital Letter, 1 Digit, 1SpecialChar required."><br><br>
     <input type="submit" value="Register"/>
 </form>
 <p>Already have an account? <a href="/user/login">Login here</a></p>

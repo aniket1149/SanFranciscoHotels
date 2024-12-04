@@ -54,4 +54,8 @@ public class HotelCollection {
         }
         return res;
     }
+    public List<HotelDTO> getAllHotels(){
+        List<HotelDTO> res = new ArrayList<>(hotelIDMap.values());
+        return res;
+    }
 }

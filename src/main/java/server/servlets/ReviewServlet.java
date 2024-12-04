@@ -21,6 +21,10 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+/**
+ * Review Servlet to serve reviews for the hotel.
+ * Handles Add, Update, Delete Reviews.
+ * **/
 
 public class ReviewServlet extends HttpServlet {
     private ThreadSafeInvertedIndex reviewCollection;
@@ -34,6 +38,13 @@ public class ReviewServlet extends HttpServlet {
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        HttpSession session = request.getSession();
+        User user = (User) session.getAttribute("user");
+        if (user == null) {
+            response.sendRedirect("/user/login");
+            return;
+        }
+
         String query = request.getParameter("id");
         if (query == null) {
             response.sendError(HttpServletResponse.SC_BAD_REQUEST);
@@ -44,6 +55,12 @@ public class ReviewServlet extends HttpServlet {
 
         @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        HttpSession session = request.getSession();
+        User user = (User) session.getAttribute("user");
+        if (user == null) {
+            response.sendRedirect("/user/login");
+            return;
+        }
         String action = request.getPathInfo();
         if (action == null) action = "/add";
         switch (action) {
@@ -122,7 +139,7 @@ public class ReviewServlet extends HttpServlet {
         Map<String, Object> model = new HashMap<>();
         model.put("review", review);
 
-        templateEngine.render("templates/edit_review.vm", model, response);
+        templateEngine.render("templates/edit_review.vm", model, request, response);
     }
 
     private void handleAddReview(HttpServletRequest request, HttpServletResponse response) throws IOException {

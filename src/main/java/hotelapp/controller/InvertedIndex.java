@@ -137,10 +137,10 @@ public class InvertedIndex {
             targetReview = reviewIdMap.get(reviewId);
         }
         if(null == targetReview) {return false;}
-        if(targetReview.getReviewText() != newReview.getReviewText()) {
+        if(!targetReview.getReviewText().equals(newReview.getReviewText())) {
             targetReview.setReviewText(newReview.getReviewText());
         }
-        if(targetReview.getTitle() != newReview.getTitle()) {
+        if(!targetReview.getTitle().equals(newReview.getTitle())) {
             targetReview.setTitle(newReview.getTitle());
         }
         targetReview.setReviewSubmissionDate(LocalDate.now().toString());

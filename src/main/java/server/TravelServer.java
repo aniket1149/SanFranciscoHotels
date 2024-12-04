@@ -10,13 +10,15 @@ import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
 import server.servlets.*;
-import server.utils.LoginFilter;
 
 import java.util.List;
 
+/**
+ * Travel Server intializes the dependenceis for each servlet.
+ * **/
 public class TravelServer {
     private static final int PORT = 8080;
-    private Server jettyServer;  // Jetty server
+    private Server jettyServer;
     private ServletContextHandler handler;
     private static final Logger logger = LogManager.getLogger(TravelServer.class);
     public TravelServer() {
@@ -25,12 +27,15 @@ public class TravelServer {
         jettyServer.setHandler(handler);
     }
 
+    /**
+     * AddServlets maps the collections to the depnedent servlets and intializes the servlet
+     * **/
+
     public void addServlets(List<Object> objs){
         handler.setContextPath("/");
         handler.addServlet(UserServlet.class, "/user/*");
         HotelCollection hotelCollection = null;
         ThreadSafeInvertedIndex reviewCollection=null;
-        // handler.addFilter(LoginFilter.class, "/*", null);
         for(Object obj : objs){
             if(obj instanceof HotelCollection){
                 hotelCollection = (HotelCollection) obj;
@@ -52,7 +57,6 @@ public class TravelServer {
     }
 
     public void start() throws Exception {
-        // FILL IN CODE: run the jetty server (call start and join)
         jettyServer.start();
         jettyServer.join();
     }

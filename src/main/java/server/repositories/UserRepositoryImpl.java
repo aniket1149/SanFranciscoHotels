@@ -5,18 +5,33 @@ import jakarta.servlet.annotation.WebServlet;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import server.utils.DatabaseUtil;
+import server.utils.PreparedStatements;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-
+/**
+ * Implementation class for UserRepository
+ * @implSpec UserRepository
+ * **/
 public class UserRepositoryImpl implements UserRepository {
     private static final Logger logger = LogManager.getLogger(UserRepositoryImpl.class);
+    private DatabaseUtil databaseUtil = DatabaseUtil.getInstance();
+
+    public UserRepositoryImpl() {
+        databaseUtil.createTable("users");
+    }
+
+    /**
+     * Searches User by username
+     * @param username
+     * @return User
+     */
     @Override
     public User findByUsername(String username) {
-        String sql = "SELECT * FROM users WHERE username = ?";
-        try(Connection conn = DatabaseUtil.getConnection()) {
+        String sql = PreparedStatements.GET_USER;
+        try(Connection conn = databaseUtil.getConnection()) {
             PreparedStatement ps = conn.prepareStatement(sql);
             ps.setString(1, username);
             ResultSet rs = ps.executeQuery();
@@ -31,10 +46,14 @@ public class UserRepositoryImpl implements UserRepository {
         return null;
     }
 
+    /**
+     * inserts the new user data to the database.
+     * @param user
+     * **/
     @Override
     public boolean save(User user) {
-        String sql = "INSERT INTO users (username, hashed_password, salt) VALUES (?, ?, ?)";
-        try(Connection conn = DatabaseUtil.getConnection()){
+        String sql = PreparedStatements.INSERT_USER;
+        try(Connection conn = databaseUtil.getConnection()){
             PreparedStatement ps = conn.prepareStatement(sql);
             ps.setString(1, user.getUsername());
             ps.setString(2, user.getHashedPassword());

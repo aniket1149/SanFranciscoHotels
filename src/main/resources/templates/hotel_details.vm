@@ -3,11 +3,17 @@
     <title>$hotel.name</title>
 </head>
 <body>
+<p>
+    #if($session.getAttribute("user"))
+        #set($currentUser = $session.getAttribute("user"))
+       <span style="color: cornflowerblue"> $currentUser.username </span> Here is the hotel you are looking for,
+    #end
+</p>
 <h1>$hotel.name</h1>
 <p>ID: $hotel.id</p>
 <p>Address: $hotel.streetAddress, $hotel.city, $hotel.state</p>
 <p>Average Rating: $averageRating</p>
-<p><a href="$expediaLink">View on Expedia</a></p>
+<p><a href="$expediaLink" target="_blank">View on Expedia</a></p>
 
 <h2>Reviews</h2>
 #if($reviews.size() == 0)
@@ -47,5 +53,8 @@
     </select><br><br>
     <input type="submit" value="Submit Review"/>
 </form>
+<br>
+<br>
+<a href="/user/logout">Logout</a>
 </body>
 </html>
