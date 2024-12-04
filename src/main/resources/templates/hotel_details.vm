@@ -14,6 +14,7 @@
 <p>Address: $hotel.streetAddress, $hotel.city, $hotel.state</p>
 <p>Average Rating: $averageRating</p>
 <p><a href="$expediaLink" target="_blank">View on Expedia</a></p>
+<p><a href="/search">Back to search</a></p>
 
 <h2>Reviews</h2>
 #if($reviews.size() == 0)
