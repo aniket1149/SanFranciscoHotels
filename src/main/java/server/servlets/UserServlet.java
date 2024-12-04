@@ -17,6 +17,7 @@ import server.utils.VelocityTemplateEngine;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.regex.Pattern;
 
 /**
  * User servlet handles the login, register endpoints for the server.
@@ -117,11 +118,15 @@ public class UserServlet extends HttpServlet {
         String salt = PasswordUtil.generateSalt();
         String hashedPassword = PasswordUtil.hashPassword(password, salt);
         User user = new User(username, hashedPassword, salt);
-
+        if(Pattern.matches("^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&])[A-Za-z\\d@$!%*?&]{8,}$", password)){
         if(userRepository.save(user)) {
             response.sendRedirect("/user/login");
         }else{
             model.put("error", "Something went wrong, try again");
+            templateEngine.render("templates/register.vm", model, request, response);
+        }
+        }else{
+            model.put("error", "Password should be atleast 8 char long. Contain 1 uppercase , 1  lowercase letter, 1 digit and 1 Special Character.");
             templateEngine.render("templates/register.vm", model, request, response);
         }
     }
