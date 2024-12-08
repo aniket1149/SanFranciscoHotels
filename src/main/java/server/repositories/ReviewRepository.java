@@ -1,6 +1,16 @@
 package server.repositories;
+import hotelapp.models.ReviewDTO;
+import java.util.Set;
 
 public interface ReviewRepository {
-    //To be done in part 2 when Reviews will be stored in db
-
+    boolean save(ReviewDTO reviewDTO);
+    Set<ReviewDTO> getReviewByHotelId(String hotelId);
+    ReviewDTO getReviewByID(String id);
+    boolean updateReview(ReviewDTO oldReview, ReviewDTO newReview);
+    boolean deleteReview(String reviewId, String hotelId );
+    boolean updateLikes (String reviewId, int newLikes);
+    boolean isReviewLikedByUser(String reviewId, String username);
+    boolean addLike(String reviewId, String username);
+    boolean removeLike(String reviewId, String username);
+    Set<String> getLikedReviewsForUser(String username);
 }

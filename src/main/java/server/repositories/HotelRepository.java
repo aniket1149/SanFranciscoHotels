@@ -1,5 +1,11 @@
 package server.repositories;
 
+import hotelapp.models.HotelDTO;
+import java.util.List;
+
 public interface HotelRepository {
-    //To be done in part 2 when Reviews will be stored in db
+    HotelDTO findHotelById(String hotelId);
+    List<HotelDTO> findHotelByName(String name);
+    List<HotelDTO> getAllHotels();
+    boolean save(HotelDTO hotel);
 }
