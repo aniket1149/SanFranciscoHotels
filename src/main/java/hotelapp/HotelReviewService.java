@@ -4,6 +4,7 @@ import hotelapp.controller.HotelCollection;
 import hotelapp.controller.ThreadSafeInvertedIndex;
 import hotelapp.fileprocessor.LoadObjectFromFile;
 import hotelapp.util.ArgParser;
+import server.repositories.*;
 
 import java.nio.file.Path;
 
@@ -24,6 +25,15 @@ public class HotelReviewService {
     private LoadObjectFromFile reviewLoader ;
     private HotelCollection hotelCollection;
     private ThreadSafeInvertedIndex reviewCollection;
+    private ReviewRepository reviewRepository;
+    private HotelRepository hotelRepository;
+    private UserRepository userRepository;
+
+    public HotelReviewService(HotelRepository hotelRepository, ReviewRepository reviewRepository, UserRepository userRepository) {
+        this.reviewRepository = reviewRepository;
+        this.hotelRepository = hotelRepository;
+        this.userRepository = userRepository;
+    }
 
     // FILL IN CODE: add instance data as needed
 
@@ -50,13 +60,13 @@ public class HotelReviewService {
         String hotelPath = argParser.getPath("-hotels");
         String reviewPath = argParser.getPath("-reviews");
         int numthreads = (threads == null) ? 1 : Integer.parseInt(threads);
-        hotelLoader = new LoadObjectFromFile(1);
+        hotelLoader = new LoadObjectFromFile(1, hotelRepository, reviewRepository, userRepository);
         hotelLoader.validPathLoadObject(Path.of(hotelPath),"hotel");
-        hotelCollection = hotelLoader.getHotelCollection();
+        //hotelCollection = hotelLoader.getHotelCollection();
         if(reviewPath != null){
-            reviewLoader = new LoadObjectFromFile(numthreads);
+            reviewLoader = new LoadObjectFromFile(numthreads, hotelRepository, reviewRepository, userRepository);
             reviewLoader.validPathLoadObject(Path.of(reviewPath),"review");
-            reviewCollection = reviewLoader.getReviewsAndInvertedIndex();
+        //    reviewCollection = reviewLoader.getReviewsAndInvertedIndex();
         }
     }
     public HotelCollection getHotelCollection() {
