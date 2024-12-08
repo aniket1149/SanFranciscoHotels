@@ -31,6 +31,19 @@ public class DatabaseUtil {
                     switch (tableName){
                         case "users":
                             createTable = PreparedStatements.CREATE_USER_TABLE;
+                            break;
+                        case "hotels":
+                            createTable = PreparedStatements.CREATE_HOTEL_TABLE;
+                            break;
+                        case "reviews":
+                            createTable = PreparedStatements.CREATE_REVIEW_TABLE;
+                            break;
+                        case "review_likes":
+                            createTable = PreparedStatements.CREATE_REVIEW_LIKES;
+                            break;
+                        case "history":
+                            createTable = PreparedStatements.CREATE_HISTORY_TABLE;
+                            break;
                     }
                     if(createTable != null){
                         statement.execute(createTable);
