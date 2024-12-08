@@ -1,5 +1,10 @@
 package hotelapp.models;
 
+import lombok.AllArgsConstructor;
+import lombok.Data;
+
+@Data
+@AllArgsConstructor
 public class GeoTags {
     private String lat;
     private String lng;
