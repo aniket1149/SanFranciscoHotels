@@ -4,8 +4,11 @@ import hotelapp.controller.HotelCollection;
 import hotelapp.controller.ThreadSafeInvertedIndex;
 import hotelapp.models.HotelDTO;
 import hotelapp.models.ReviewDTO;
+import hotelapp.models.User;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import server.repositories.*;
+import server.utils.PasswordUtil;
 
 import java.io.IOException;
 import java.nio.file.DirectoryStream;
@@ -36,14 +39,19 @@ public class LoadObjectFromFile {
     private Set<Path> pathNotRecognized = new HashSet<>();
     private HotelCollection hotelCollection;
     private static final Logger logger = LogManager.getLogger(LoadObjectFromFile.class);
+    private HotelRepository hotelRepository = new HotelRepositoryImpl();
+    private ReviewRepository reviewRepository = new ReviewRepositoryImpl();
+    private Set<String> users = new HashSet<>();
+    private UserRepository userRepository;
 
-
-    public LoadObjectFromFile(int numThreads) {
+    public LoadObjectFromFile(int numThreads, HotelRepository hotelRepository, ReviewRepository reviewRepository, UserRepository userRepository) {
         jsonParserHelper = new JsonParserHelper();
         // reviewDTOS = new TreeSet<>();
         hotelDTOS = new HashSet<>();
         this.numThreads = numThreads;
-
+        this.hotelRepository = hotelRepository;
+        this.reviewRepository = reviewRepository;
+        this.userRepository = userRepository;
     }
 
 
@@ -59,9 +67,9 @@ public class LoadObjectFromFile {
             executorService = Executors.newFixedThreadPool(numThreads);
             phaser = new Phaser(1);
             validatePathsAndProcess(path, type);
-
             phaser.arriveAndAwaitAdvance();
             executorService.shutdown();
+            createUserCreds();
             logger.info("Loaded reviews to collection");
         }
     }
@@ -84,7 +92,11 @@ public class LoadObjectFromFile {
                 if(type.equals("hotel")){
                     try{
                     Set<HotelDTO> hotels = jsonParserHelper.parseHotel(List.of(path));
-                    hotelDTOS.addAll(hotels);
+                    for(HotelDTO hotel : hotels){
+                        hotel.setLink(generateExpediaLink(hotel));
+                        hotelRepository.save(hotel);
+                    }
+                    //hotelDTOS.addAll(hotels);
                     logger.debug("Added {} hotels from {}", hotels.size(), path.getFileName());
                     }
                     catch(Exception e){
@@ -108,6 +120,12 @@ public class LoadObjectFromFile {
         }
     }
 
+    private String generateExpediaLink(HotelDTO hotel) {
+        String cityName = hotel.getCity().replace(" ", "-");
+        String hotelName = hotel.getName().replace(" ", "-");
+        return "https://www.expedia.com/" + cityName + "-Hotels-" + hotelName + ".h" + hotel.getId() + ".Hotel-Information";
+    }
+
     private class ReviewProcessorTask implements Runnable{
             private Path path;
             public ReviewProcessorTask(Path path
@@ -121,8 +139,10 @@ public class LoadObjectFromFile {
             try{
                 logger.debug("Thread {} processing file: {}", Thread.currentThread().getName(), path);
                 Set<ReviewDTO> reviewDTOSet =  jsonParserHelper.parseReview(List.of(path));
+                logger.debug("Reviews sent for user extraction: {}", reviewDTOSet.size());
+                addUsersandReviewsFromJson(reviewDTOSet);
                 logger.debug("Thread {} added {} reviews from {}", Thread.currentThread().getName(), reviewDTOSet.size(), path.getFileName());
-                invertedIndex.addReviews(reviewDTOSet);
+                //invertedIndex.addReviews(reviewDTOSet);
             }catch(Exception e){
                 logger.error("Error processing file {} in thread {}", path, Thread.currentThread().getName(), e);
             }finally {
@@ -132,11 +152,23 @@ public class LoadObjectFromFile {
         }
     }
 
-    public HotelCollection getHotelCollection() {
-        return new HotelCollection(hotelDTOS);
+
+    private void addUsersandReviewsFromJson(Set<ReviewDTO> reviewDTOSets){
+        synchronized (this){
+            for(ReviewDTO reviewDTO : reviewDTOSets){
+                    users.add(reviewDTO.getUserNickname());
+                    reviewRepository.save(reviewDTO);
+            }
+            logger.debug("Added users to the set.");
+        }
     }
-    public ThreadSafeInvertedIndex getReviewsAndInvertedIndex() {
-        return invertedIndex;
+    private void createUserCreds(){
+        for(String name : users){
+            if(name.isBlank() || name.isEmpty()) name ="Anonymous";
+                String salt = PasswordUtil.generateSalt();
+                User user = new User(name, PasswordUtil.hashPassword("12345678"+name+"$",salt),salt);
+                userRepository.save(user);
+        }
     }
 
 
