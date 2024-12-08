@@ -10,6 +10,10 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
+import server.repositories.HotelRepository;
+import server.repositories.HotelRepositoryImpl;
+import server.repositories.ReviewRepository;
+import server.repositories.ReviewRepositoryImpl;
 import server.utils.VelocityTemplateEngine;
 
 import java.io.IOException;
@@ -21,15 +25,15 @@ import java.util.Set;
  * holds the functionality for Hotel server. Maps to -> /hotel/*
  */
 public class HotelServlet extends HttpServlet {
-    private HotelCollection hotelCollection;
-    private ThreadSafeInvertedIndex reviewCollection;
     private VelocityTemplateEngine templateEngine = new VelocityTemplateEngine();
+    private HotelRepository hotelRepository;
+    private ReviewRepository reviewRepository;
     private HotelServlet() {
     }
 
-    public HotelServlet(HotelCollection hotelCollection, ThreadSafeInvertedIndex reviewCollection) {
-        this.hotelCollection = hotelCollection;
-        this.reviewCollection = reviewCollection;
+    public HotelServlet(HotelRepository hotelRepository, ReviewRepository reviewRepository) {
+        this.hotelRepository = hotelRepository;
+        this.reviewRepository = reviewRepository;
     }
     /**
      * Gets the hotel based on the hotelId. Along with the reviews.
@@ -42,36 +46,37 @@ public class HotelServlet extends HttpServlet {
             return;
         }
         String hotelId = pathInfo.substring(1);
-        HotelDTO hotel = hotelCollection.findHotelById(hotelId);
+        //HotelDTO hotel = hotelCollection.findHotelById(hotelId);
+        HotelDTO hotel = hotelRepository.findHotelById(hotelId);
+
         if (hotel == null) {
             response.sendError(HttpServletResponse.SC_NOT_FOUND, "Hotel not found");
             return;
         }
         HttpSession session = request.getSession();
         User user = null;
-
+        Map<String, Boolean> userLikesMap = new HashMap<>();
         if((user = (User) session.getAttribute("user")) == null) {
             response.sendRedirect("/user/login");
             return;
         }
-        Set<ReviewDTO> reviewDTOS = reviewCollection.getReviewByHotelId(hotelId);
+        Set<String> userLikedReviews = reviewRepository.getLikedReviewsForUser(user.getUsername());
+        Set<ReviewDTO> reviewDTOS = reviewRepository.getReviewByHotelId(hotelId);
+        for (ReviewDTO reviewDTO : reviewDTOS) {
+            userLikesMap.put(reviewDTO.getReviewId(), userLikedReviews.contains(reviewDTO.getReviewId()));
+        }
         double averageRating = calculateAverageRating(reviewDTOS);
-        String expediaLink = generateExpediaLink(hotel);
         Map<String, Object> model = new HashMap<>();
         model.put("hotel", hotel);
         model.put("reviews", (reviewDTOS!=null) ? reviewDTOS : new ArrayList<>() );
         model.put("averageRating", averageRating);
-        model.put("expediaLink", expediaLink);
         model.put("loggedInUser", user.getUsername());
+        model.put("userLikesMap", userLikesMap);
 
         templateEngine.render("templates/hotel_details.vm", model, request, response);
     }
 
-    private String generateExpediaLink(HotelDTO hotel) {
-        String cityName = hotel.getCity().replace(" ", "-");
-        String hotelName = hotel.getName().replace(" ", "-");
-        return "https://www.expedia.com/" + cityName + "-Hotels-" + hotelName + ".h" + hotel.getId() + ".Hotel-Information";
-    }
+
 
     private double calculateAverageRating(Set<ReviewDTO> reviews) {
         if (reviews == null || reviews.isEmpty()) return 0.0;
