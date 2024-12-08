@@ -1,7 +1,7 @@
 package server.repositories;
 
 import hotelapp.models.User;
-import jakarta.servlet.annotation.WebServlet;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import server.utils.DatabaseUtil;
@@ -11,6 +11,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+
 /**
  * Implementation class for UserRepository
  * @implSpec UserRepository
@@ -38,7 +39,9 @@ public class UserRepositoryImpl implements UserRepository {
             if(rs.next()) {
                 String password = rs.getString("hashed_password");
                 String salt = rs.getString("salt");
-                return new User(username, password, salt);
+                String id = rs.getString("id");
+                String lastLogin = rs.getString("last_login");
+                return new User(id, username, password, salt, lastLogin);
             }
         } catch (SQLException e) {
             logger.error(e);
@@ -48,7 +51,7 @@ public class UserRepositoryImpl implements UserRepository {
 
     /**
      * inserts the new user data to the database.
-     * @param user
+     * @param user : User Class requried,
      * **/
     @Override
     public boolean save(User user) {
@@ -58,6 +61,21 @@ public class UserRepositoryImpl implements UserRepository {
             ps.setString(1, user.getUsername());
             ps.setString(2, user.getHashedPassword());
             ps.setString(3, user.getSalt());
+            int rowsChanged = ps.executeUpdate();
+            return rowsChanged>0;
+        } catch (SQLException e) {
+            logger.error(e);
+        }
+        return false;
+    }
+
+    @Override
+    public boolean update(User user) {
+        String sql = PreparedStatements.UPDATE_LAST_LOGIN;
+        try(Connection conn = databaseUtil.getConnection()){
+            PreparedStatement ps = conn.prepareStatement(sql);
+            ps.setString(1, user.getLastLogin());
+            ps.setString(2, user.getUsername());
             int rowsChanged = ps.executeUpdate();
             return rowsChanged>0;
         } catch (SQLException e) {

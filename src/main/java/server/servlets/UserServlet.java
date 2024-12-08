@@ -2,21 +2,19 @@ package server.servlets;
 
 import hotelapp.models.User;
 import jakarta.servlet.ServletException;
-import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.apache.velocity.app.VelocityEngine;
-import server.TravelServer;
 import server.repositories.UserRepository;
-import server.repositories.UserRepositoryImpl;
+import server.utils.HelperUtil;
 import server.utils.PasswordUtil;
 import server.utils.VelocityTemplateEngine;
 
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.regex.Pattern;
 
 /**
@@ -25,8 +23,13 @@ import java.util.regex.Pattern;
 
 public class UserServlet extends HttpServlet {
     private VelocityTemplateEngine templateEngine = new VelocityTemplateEngine();
-    private UserRepository userRepository = new UserRepositoryImpl();
+    private UserRepository userRepository;
     private static final Logger logger = LogManager.getLogger(UserServlet.class);
+
+    private UserServlet(){}
+    public UserServlet(UserRepository userRepository) {
+        this.userRepository = userRepository;
+    }
     /**
      * GET handles the login functionality and directs based on the action like user/login, user/register, user/logout.
      * @param request should contain query and searchType = id or name
@@ -89,12 +92,20 @@ public class UserServlet extends HttpServlet {
         User user = userRepository.findByUsername(username);
         if(user != null) {
             if (PasswordUtil.verifyPassword(password, user.getHashedPassword(), user.getSalt())) {
+
                 HttpSession session = request.getSession();
                 session.setAttribute("user", user);
                 response.sendRedirect("/search/");
+
+                String formattedDateTime = HelperUtil.dateFormatter(Optional.empty());
+                User updateTime = new User(user);
+                updateTime.setLastLogin(formattedDateTime);
+                userRepository.update(updateTime);
+
                 return;
             }
         }
+
         Map<String, Object> model = new HashMap<>();
         model.put("error", "Invalid Username or Password");
         templateEngine.render("templates/login.vm", model,request, response);
