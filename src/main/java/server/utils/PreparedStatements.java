@@ -1,7 +1,7 @@
 package server.utils;
-
+/** Prepared Statements All Static and Final */
 public class PreparedStatements {
-    /** Prepared Statements  */
+
     /** For creating the users table */
     public static final String CREATE_USER_TABLE =
                     "CREATE TABLE IF NOT EXISTS users (" +
@@ -55,10 +55,23 @@ public class PreparedStatements {
     public static final String GET_USER = "SELECT * FROM users WHERE username = ?";
     /** For geting the hotel details */
     public static final String GET_HOTEL = "SELECT * FROM hotels WHERE id = ?";
+    public static final String GET_HOTEL_BYNAME = "SELECT * FROM hotels WHERE name like ?";
+    public static final String GET_HOTELS = "SELECT * FROM hotels";
+    public static final String GET_USER_HISTORY = """
+            SELECT h.name, h.link, his.*
+            FROM history his
+            INNER JOIN hotels h
+            ON h.id = his.hotel_id
+            WHERE his.user_name = ?
+            ORDER BY his.time DESC;
+            """;
     /** For geting the review details */
     public static final String GET_REVIEW = "SELECT * FROM reviews WHERE id = ?";
     /** For geting the reviews for hotelid  */
     public static final String GET_REVIEW_HOTELID = "SELECT * FROM reviews WHERE hotel_id = ?";
     /** For inserting the user details */
     public static final String INSERT_USER = "INSERT INTO users (username, hashed_password, salt) VALUES (?, ?, ?)";
+    public static final String INSERT_USER = "INSERT ignore INTO users (username, hashed_password, salt) VALUES (?, ?, ?)";
+    public static final String INSERT_HOTEL = "INSERT ignore INTO hotels(id, name, address, city, longitude, latitude, state, link) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+    public static final String INSERT_REVIEW = "INSERT ignore INTO reviews(id, hotel_id, rating, title, reviewText, user, date, likes ) values (?, ?, ?, ?, ?, ?, ?, ?)";
 }
