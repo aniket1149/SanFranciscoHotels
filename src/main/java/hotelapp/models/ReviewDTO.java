@@ -12,6 +12,7 @@ public class ReviewDTO implements Comparable<ReviewDTO> {
     private String title;
     private String reviewText;
     private String reviewSubmissionDate;
+    private int likes;
 
     public String getReviewSubmissionDate() {
         return reviewSubmissionDate;
@@ -41,8 +42,8 @@ public class ReviewDTO implements Comparable<ReviewDTO> {
         return hotelId;
     }
 
-    public ReviewDTO(){
 
+    public ReviewDTO(){
     }
 
     public ReviewDTO(ReviewDTO duplicate){

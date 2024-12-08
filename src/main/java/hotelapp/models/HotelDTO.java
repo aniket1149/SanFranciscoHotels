@@ -1,13 +1,12 @@
 package hotelapp.models;
 
 import com.google.gson.annotations.SerializedName;
+import lombok.Data;
 
+@Data
 public class HotelDTO implements Comparable{
     @SerializedName(value = "f")
     private String name;
-
-
-
     @SerializedName(value = "ad")
     private String streetAddress;
     @SerializedName(value = "ci")
@@ -17,6 +16,7 @@ public class HotelDTO implements Comparable{
     @SerializedName(value = "pr")
     private String state;
     private GeoTags ll;
+    private String link;
 
     //private Object ll;
 
