@@ -1,12 +1,13 @@
 package server.servlets;
 
-import hotelapp.controller.HotelCollection;
 import hotelapp.models.HotelDTO;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
+import server.repositories.HotelRepository;
+import server.repositories.HotelRepositoryImpl;
 import server.utils.VelocityTemplateEngine;
 
 import java.io.IOException;
@@ -17,13 +18,13 @@ import java.util.Map;
 /** For searching the hotels details */
 public class SearchServlet extends HttpServlet {
     private VelocityTemplateEngine templateEngine = new VelocityTemplateEngine();
-    private HotelCollection hotelCollection;
+    private HotelRepository hotelRepository;
 
     private SearchServlet() {
     }
 
-    public SearchServlet(HotelCollection hotelCollection) {
-        this.hotelCollection = hotelCollection;
+    public SearchServlet(HotelRepository hotelRepository) {
+        this.hotelRepository = hotelRepository;
     }
     /**
      * GET checks if session is not null else redirects back to login/user
@@ -44,20 +45,21 @@ public class SearchServlet extends HttpServlet {
         model.put("param", request.getParameterMap());
 
         List<HotelDTO> results = new ArrayList<>();
-
-        List<HotelDTO> hotels = hotelCollection.getAllHotels();
+        if(query == null || query.isBlank() || searchType == null || searchType.isBlank()) {
+        List<HotelDTO> hotels = hotelRepository.getAllHotels();
         results.addAll(hotels);
+        }
 
         if (query != null && !query.isEmpty() && searchType != null){
             if (searchType.equals("id")) {
-                HotelDTO hotel = hotelCollection.findHotelById(query);
+                HotelDTO hotel = hotelRepository.findHotelById(query);
                 results.clear();
                 if (hotel != null) {
                     results.add(hotel);
                 }
 
             }else if (searchType.equals("name")) {
-                hotels = hotelCollection.findHotelByName(query);
+                List<HotelDTO> hotels = hotelRepository.findHotelByName(query);
                 results.clear();
                 if(null != hotels && !hotels.isEmpty())results.addAll(hotels);
             }
