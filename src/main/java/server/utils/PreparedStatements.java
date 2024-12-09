@@ -69,10 +69,12 @@ public class PreparedStatements {
     public static final String GET_REVIEW = "SELECT * FROM reviews WHERE id = ?";
     /** For geting the reviews for hotelid  */
     public static final String GET_REVIEW_HOTELID = "SELECT * FROM reviews WHERE hotel_id = ?";
+    public static final String GET_REVIEW_LIKED = "SELECT 1 FROM review_likes WHERE review_id = ? AND username = ?";
+    public static final String GET_ALL_LIKES_FOR_USER = "SELECT review_id FROM review_likes WHERE username = ?";
     /** For inserting the user details */
-    public static final String INSERT_USER = "INSERT INTO users (username, hashed_password, salt) VALUES (?, ?, ?)";
     public static final String INSERT_USER = "INSERT ignore INTO users (username, hashed_password, salt) VALUES (?, ?, ?)";
     public static final String INSERT_HOTEL = "INSERT ignore INTO hotels(id, name, address, city, longitude, latitude, state, link) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+    public static final String INSERT_REVIEW_LIKES = "INSERT INTO review_likes (review_id, username) VALUES (?, ?)";
     public static final String INSERT_REVIEW = "INSERT ignore INTO reviews(id, hotel_id, rating, title, reviewText, user, date, likes ) values (?, ?, ?, ?, ?, ?, ?, ?)";
     public static final String INSERT_HISTORY = "INSERT ignore INTO history (hotel_id, user_name, time) VALUES (?, ?, ?)";
     public static final String UPDATE_HISTORY = "UPDATE history SET time = ? WHERE hotel_id = ? and user_name = ?";
@@ -81,4 +83,18 @@ public class PreparedStatements {
             SET last_login = ?
             WHERE username = ?;
             """;
+    public static final String UPDATE_REVIEW = """
+            UPDATE reviews
+            SET reviewText = ?,
+            title = ?
+            WHERE id = ? and hotel_id = ?;
+            """;
+    public static final String UPDATE_LIKES="""
+            UPDATE reviews
+            SET likes = ?
+            WHERE id = ?;
+            """;
+
+    public static final String DELETE_REVIEW_LIKES ="DELETE FROM review_likes WHERE review_id = ? AND username = ?";
+    public static final String DELETE_REVIEW = "DELETE FROM reviews WHERE id = ? and hotel_id = ?;";
 }
