@@ -1,0 +1,21 @@
+<html>
+<head>
+    <title>My History</title>
+</head>
+<body>
+<h1>Recent Search History</h1>
+<table border="1">
+    <tr>
+        <th>Hotel Name</th>
+        <th>Expedia Link</th>
+        <th>Last Clicked Time</th>
+    </tr>
+    #foreach($item in $historyItems)
+        <tr>
+            <td>$item.hotelName</td>
+            <td><a href="$item.link" target="_blank">Expedia</a></td>
+            <td>$item.time</td>
+        </tr>
+    #end
+
+</body>
