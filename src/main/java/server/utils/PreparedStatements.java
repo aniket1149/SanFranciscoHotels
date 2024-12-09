@@ -74,6 +74,8 @@ public class PreparedStatements {
     public static final String INSERT_USER = "INSERT ignore INTO users (username, hashed_password, salt) VALUES (?, ?, ?)";
     public static final String INSERT_HOTEL = "INSERT ignore INTO hotels(id, name, address, city, longitude, latitude, state, link) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
     public static final String INSERT_REVIEW = "INSERT ignore INTO reviews(id, hotel_id, rating, title, reviewText, user, date, likes ) values (?, ?, ?, ?, ?, ?, ?, ?)";
+    public static final String INSERT_HISTORY = "INSERT ignore INTO history (hotel_id, user_name, time) VALUES (?, ?, ?)";
+    public static final String UPDATE_HISTORY = "UPDATE history SET time = ? WHERE hotel_id = ? and user_name = ?";
     public static final String UPDATE_LAST_LOGIN = """
             UPDATE users
             SET last_login = ?
