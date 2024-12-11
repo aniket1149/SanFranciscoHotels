@@ -8,4 +8,5 @@ public interface HistoryRepository {
     boolean saveHistory(History history);
     List<History> findUserClickHistory(String userName);
     boolean updateHistory(History history, String username);
+    boolean deleteHistory(String username);
 }

@@ -36,6 +36,12 @@ public class HistoryServlet extends HttpServlet {
     }
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        HttpSession session = request.getSession();
+        User user = null;
+        if((user = (User) session.getAttribute("user")) == null) {
+            response.sendRedirect("/user/login");
+            return;
+        }
         String action = request.getPathInfo();
         if (action == null) action = "/view";
         switch (action) {
@@ -45,7 +51,34 @@ public class HistoryServlet extends HttpServlet {
             case "/view":
                 handleViewHistory(request, response);
                 break;
+            case "/delete":
+                handleDeleteLinkHistory(request, response);
             default: response.sendError(HttpServletResponse.SC_NOT_FOUND);
+        }
+    }
+
+    private void handleDeleteLinkHistory(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        HttpSession session = request.getSession();
+        User user = null;
+        if((user = (User) session.getAttribute("user")) == null) {
+            response.sendRedirect("/user/login");
+            return;
+        }
+        String sender= request.getParameter("username");
+        if(sender == null) {
+            response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Missing sender");
+            return;
+        }
+
+        if(sender.equals(user.getUsername())) {
+            if(historyRepository.deleteHistory(sender)) {
+                response.sendRedirect("/history/view");
+            }
+            else {
+                response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Missing sender");
+                response.sendRedirect("/history/view");
+                return;
+            }
         }
     }
 

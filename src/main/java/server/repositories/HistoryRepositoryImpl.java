@@ -62,8 +62,8 @@ public class HistoryRepositoryImpl extends HotelRepositoryImpl implements Histor
     @Override
     public boolean updateHistory(History history, String username) {
         String sql = PreparedStatements.UPDATE_HISTORY;
-        try(Connection conn = databaseUtil.getConnection()){
-            PreparedStatement ps = conn.prepareStatement(sql);
+        try(Connection conn = databaseUtil.getConnection();
+            PreparedStatement ps = conn.prepareStatement(sql)){
             ps.setString(1, history.getTime());
             ps.setString(2, history.getHotelId());
             ps.setString(3, username);
@@ -71,6 +71,21 @@ public class HistoryRepositoryImpl extends HotelRepositoryImpl implements Histor
 
         }catch (SQLException e){
             logger.error("Error while updating history", e);
+        }
+        return false;
+    }
+
+    @Override
+    public boolean deleteHistory(String username) {
+        String sql = PreparedStatements.DELETE_HISTORY;
+        try(Connection conn = databaseUtil.getConnection();
+        PreparedStatement ps = conn.prepareStatement(sql);
+        ){
+            ps.setString(1, username);
+            int rowsChanged = ps.executeUpdate();
+            return rowsChanged>0;
+        }catch (SQLException e){
+            logger.error("Error while deleting history", e);
         }
         return false;
     }
