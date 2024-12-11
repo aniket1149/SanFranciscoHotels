@@ -1,22 +1,63 @@
 <html>
 <head>
+    $bootstrap
     <title>Login</title>
+    <style>
+        body {
+            background-color: #fff;
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+        h1, label, button, a, .alert {
+            font-weight: bold;
+        }
+        .hFont{
+            font-size: 5.5rem;
+        }
+        .mFont{
+            font-size: 1.75rem;
+        }
+
+        a {
+            color: #000;
+        }
+        a:hover {
+            text-decoration: none;
+        }
+    </style>
 </head>
-<body>
-<h1>Login</h1>
-    #if($error)
-    <p style="color:red;">$error</p>
-    #end
-    #if($msg)
-    <p style="color:green;">$msg</p>
-    #end
-<form action="/user/login" method="post">
-    <label>Username:</label><br>
-    <input type="text" name="username"/><br>
-    <label>Password:</label><br>
-    <input type="password" name="password"/><br><br>
-    <input type="submit" value="Login"/>
-</form>
-<p>Don't have an account? <a href="/user/register">Register here</a></p>
+<body class="d-flex justify-content-center align-items-center vh-100">
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="d-flex align-items-center col-6">
+            <h1 class="text-center mb-4 hFont">Login.</h1>
+        </div>
+        <div class="col-6">
+            #if($error)
+                <div class="alert alert-danger text-center" role="alert">
+                    $error
+                </div>
+            #end
+            #if($msg)
+                <div class="alert alert-success text-center" role="alert">
+                    $error
+                </div>
+            #end
+            <form action="/user/login" method="post" class="p-4 rounded bg-white">
+                <div class="mb-3">
+                    <label for="username" class="form-label mFont">Username.</label>
+                    <input type="text" name="username" id="username" class="form-control" required/>
+                </div>
+                <div class="mb-3">
+                    <label for="password" class="form-label mFont">Password.</label>
+                    <input type="password" name="password" id="password" class="form-control" required/>
+                </div>
+                <button type="submit" class="btn btn-dark w-100 mt-2">Login</button>
+            </form>
+            <p class="text-center mt-3">
+                Don't have an account? <a href="/user/register" class="text-decoration-none">Register here</a>
+            </p>
+        </div>
+    </div>
+</div>
 </body>
 </html>

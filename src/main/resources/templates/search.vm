@@ -1,44 +1,170 @@
 <html>
 <head>
+    $bootstrap
     <title>Hotel Search</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+          integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+          crossorigin=""/>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+            integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+            crossorigin=""></script>
+<script>
+    document.addEventListener("DOMContentLoaded", function (){
+    var map = L.map('map').setView([37.55, -122.44], 10);
+    mapLink =
+            '<a href="http://openstreetmap.org">OpenStreetMap</a>';
+    L.tileLayer(
+            'http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; ' + mapLink + ' Contributors',
+                maxZoom: 18,
+            }).addTo(map);
+
+    fetch("/search/getLatLang",{
+    }).then(r=>r.json())
+    .then(data =>{
+        if(data){
+                    data.forEach(lngLat => {
+               new L.marker([lngLat.long, lngLat.lat]).bindPopup(lngLat.name).addTo(map);
+            })
+        }
+    });
+    });
+</script>
+    <style>
+        body {
+            background-color: #fff;
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+        h1, label, button, a, .alert {
+            font-weight: bold;
+        }
+        .hFont{
+            font-size: 4rem;
+            padding: 0.375rem;
+        }
+        .mFont{
+            font-size: 1.75rem;
+        }
+
+        a {
+            color: #000;
+        }
+        a:hover {
+            text-decoration: none;
+        }
+    </style>
 </head>
 <body>
-<p>
-    #if($session.getAttribute("user"))
-        #set($currentUser = $session.getAttribute("user"))
-        Welcome,  $currentUser.username !!
-    #end
-</p>
+<div class="container-fluid vh-100 d-flex flex-column">
+    <div class="row flex-grow-1">
+        <div class="col-3 border-end bg-white d-flex flex-column justify-content-center">
+            <div class="w-100">
+                <div class ="w-100" id="map" style="height: 450px"></div>
+            </div>
 
-<h1>Hotel Search</h1>
+            #set($currentUser = $session.getAttribute("user"))
+            <h2 class="mb-4 hFont">Hello, <span class="text-primary">$currentUser.username</span>.</h2>
+            <a href="/history/view" class="btn btn-link mb-2 fw-bold text-start">My Profile <i class="bi bi-arrow-right"></i></a>
+            <a href="/user/logout" class="btn btn-link mb-2 fw-bold text-start">Logout <i class="bi bi-arrow-right"></i></a>
+        </div>
+        <div class="col-9 bg-white overflow-scroll vh-100">
+            <div class="sticky-top vw-100 bg-white px-4 py-2">
+            <h1 class="mb-2 hFont fw-bold">Hotel Search</h1>
+            <form action="/search" method="get" class="mb-3 d-flex align-items-center gap-2" >
+                <input type="text" name="query" id="queryInput" class="form-control w-auto" placeholder="Enter search term" required/>
+                <div class="form-check form-check-inline">
+                    <input class="form-check-input" type="radio" name="searchType" id="searchByName" value="name" #if($!{param.searchType} == "name") checked #end>
+                    <label class="form-check-label" for="searchByName">Name</label>
+                </div>
+                <div class="form-check form-check-inline">
+                    <input class="form-check-input" type="radio" name="searchType" id="searchById" value="id" #if($!{param.searchType} == "id")checked#end>
+                    <label class="form-check-label" for="searchById">ID</label>
+                </div>
+                <button id="searchButton" class="btn btn-dark fw-bold">Search</button>
+            </form>
+            </div>
 
+            <div id="noResultsMsg" class="text-danger fw-bold mb-3" style="display:none;">No hotels found</div>
 
-<!-- Search Form -->
-<form action="/search" method="get">
+            <div class="table-responsive p-4 pt-0 ">
+                #if($results && $results.size()>0)
+                #foreach($hotel in $results)
 
-    <input type="text" name="query" placeholder="Enter hotel ID or name"  required/>
-    <br/>
-    <label>
-        <input type="radio" name="searchType" value="id" #if($!{param.searchType} == "id")checked#end/> Search by ID
-    </label>
-    <label>
-        <input type="radio" name="searchType" value="name" #if($!{param.searchType} == "name")checked#end/> Search by Name
-    </label>
-    <br/>
-    <input type="submit" value="Search"/>
-</form>
+                <div id="accordion">
+                    <div class="card">
+                        <div class="card-header bg-white" id="headingOne">
+                            <h5 class="mb-0 text-start">
+                                <button class="btn btn-link w-100 text-start" data-bs-toggle="collapse" data-bs-target="#collapseOne$hotel.id" aria-expanded="true" aria-controls="collapseOne">
+                                    $hotel.name
+                                </button>
+                            </h5>
+                        </div>
+                        <div id="collapseOne$hotel.id" class="collapse" aria-labelledby="headingOne" data-parent="#accordion">
+                            <div class="card-body">
+                            <div class="container-fluid  d-flex flex-column">
+                                <div class="row">
+                                <div class="col-12 border-end bg-white d-flex flex-column justify-content-center">
+                                    <p>ID: $hotel.id</p>
+                                    <p>Address: $hotel.streetAddress, $hotel.city, $hotel.state</p>
+                                    <p>Average Rating: $hotel.rating</p>
+                                 <td><a href="/hotel/$hotel.id">View Details</a></td>
+                                </div>
+                            </div>
+                            </div>
+                            </div>
+                        </div>
+                </div>
 
-    #if($results)
-    <h2>Search Results</h2>
-    <ul>
-        #foreach($hotel in $results)
-            <li><a href="/hotel/$hotel.id">$hotel.name</a></li>
-        #end
-    </ul>
-    #end
+                </div>
 
-<br>
-<br>
-<a href="/user/logout">Logout</a>
+                    #end
+                    #end
+            </div>
+        </div>
+    </div>
+    </div>
 </body>
 </html>
+##            <p>
+##    #if($session.getAttribute("user"))
+##        #set($currentUser = $session.getAttribute("user"))
+##    <h1 class="text-center mb-4 hFont">
+##        Welcome,  $currentUser.username !!</h1>
+##        $currentUser.lastLogin
+##        <p><a href="/history/view">My Profile</a></p>
+##    #end
+##</p>
+
+##<h1>Hotel Search</h1>
+##
+##
+##<!-- Search Form -->
+##<form action="/search" method="get">
+##
+##    <input type="text" name="query" placeholder="Enter hotel ID or name"  required/>
+##    <br/>
+##    <label>
+##        <input type="radio" name="searchType" value="id" #if($!{param.searchType} == "id")checked#end/> Search by ID
+##    </label>
+##    <label>
+##        <input type="radio" name="searchType" value="name" #if($!{param.searchType} == "name")checked#end/> Search by Name
+##    </label>
+##    <br/>
+##    <input type="submit" value="Search"/>
+##</form>
+##
+##    #if($results)
+##    <h2>Search Results</h2>
+##    <ul>
+##        #foreach($hotel in $results)
+##            <li><a href="/hotel/$hotel.id">$hotel.name</a></li>
+##        #end
+##    </ul>
+##    #end
+##
+##<br>
+##<br>
+##
+##</body>
+##</html>

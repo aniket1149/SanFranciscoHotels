@@ -1,61 +1,466 @@
 <html>
 <head>
+    $bootstrap
     <title>$hotel.name</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+          integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+          crossorigin=""/>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+            integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+            crossorigin=""></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script type="text/javascript">
+        document.addEventListener("DOMContentLoaded", function (){
+            const hotelId = "$hotel.id";
+            const reviewsContainer = document.getElementById("reviewsContainer");
+            const noResultsMag  = document.getElementById("noResultsMsg");
+            const nextPageBtn  = document.getElementById("nextPageBtn");
+            const prevPageBtn  = document.getElementById("prevPageBtn");
+            const addReviewForm  = document.getElementById("addReviewForm");
+            const avgRatingLabel = document.getElementById("avgRatingLbl");
+            const editReviewForm = document.getElementById("editReviewForm");
+            const editReviewModal = new bootstrap.Modal(document.getElementById('editReviewModal'), {});
+
+
+
+
+            let currentPage = 1;
+            const limit = 2;
+            if(currentPage === 1){
+                prevPageBtn.disabled=true;
+                nextPageBtn.disabled=false;
+            }
+            function loadReviews(page) {
+                let params = new URLSearchParams();
+                params.append("hotelId", $hotel.id);
+                params.append("page", page);
+                params.append("limit", limit);
+
+                fetch("/review/list?"+params.toString(),{
+                    headers: {"X-Requested-With": "XMLHttpRequest"}
+                }).then(r=>r.json())
+                        .then(data => {
+                            avgRatingLabel.innerHTML=""
+                            reviewsContainer.innerHTML ="";
+                            noResultsMag.style.display ="none";
+                            if(data.noResults){
+                                noResultsMag.style.display ="block";
+                                prevPageBtn.disabled = true;
+                                nextPageBtn.disabled = true;
+                                return;
+                            }
+                            data.reviews.forEach(review => {
+                                createReviewUi(review);
+                                avgRatingLabel.innerHTML=`Average ratings : ${review.averageRating}`;
+                            })
+                            nextPageBtn.disabled=!data.hasNext;
+                            prevPageBtn.disabled=!data.hasPrevious;
+                        }).catch(err => console.error(err));
+
+
+
+            }
+
+            ##<div class="card w-100">
+                ##     <div class="card-body">
+                ##         <h5 class="card-title">$review.title</h5>
+                ##         <p>Rating: $review.ratingOverall</p>
+                ##         <p class="card-text">$review.reviewText</p>
+                ##         <button class="like-button" data-review-id="$review.reviewId" data-liked="$liked">
+                ##             #if($liked)Unlike #else Like #end
+                ##         </button>
+                ##         <span class="like-count" data-review-id="$review.reviewId">$review.likes</span>
+            function createReviewUi(review){
+                let card = document.createElement("div");
+                card.setAttribute("class","card w-100 mb-2");
+
+                let cardTittle = document.createElement("h5");
+                cardTittle.setAttribute("class","card-header");
+                cardTittle.textContent = review.title;
+
+                let cardBody = document.createElement("div");
+                cardBody.setAttribute("class", "card-body");
+
+
+                let cardRating = document.createElement("p");
+                cardRating.textContent = `Ratings : ${review.ratingOverall}`;
+
+                let reviewText = document.createElement("p");
+                reviewText.setAttribute("class","card-text");
+                reviewText.textContent = review.reviewText;
+
+                let userEl = document.createElement("p");
+                userEl.setAttribute("class","card-text font-italic");
+                userEl.textContent = `By ${review.userNickname} on ${review.reviewSubmissionDate}`;
+
+                let actionsRow = document.createElement("div");
+                actionsRow.setAttribute("class", "card-footer d-flex");
+
+
+                let likes = document.createElement("span");
+                likes.textContent = review.likes + " ";
+
+                let likeButton = document.createElement("i");
+                likeButton.className = "like-button btn btn-sm";
+                likeButton.setAttribute("data-review-id", review.reviewId);
+                likeButton.setAttribute("data-liked", review.liked === "true" ? "true" : "false");
+                likeButton.textContent = review.liked === "true" ? likeButton.setAttribute("class","like-button bi bi-heart-fill color-red btn btn-sm") : likeButton.setAttribute("class", "like-button bi bi-heart color-red btn btn-sm");
+                likes.appendChild(likeButton);
+
+                let rightActions = document.createElement("div");
+                if(review.userNickname==='$session.getAttribute("user").username')
+                {
+                    let editLink = document.createElement("a");
+                    //editLink.href = `/review/edit?id=${review.id}`;
+                    editLink.className = "edit-button btn btn-sm btn-link";
+                    editLink.textContent = "Edit";
+                    editLink.setAttribute("data-bs-toggle", "modal");
+                    editLink.setAttribute("data-bs-target", "#editReviewModal")
+                    editLink.setAttribute("data-review-id", review.reviewId);
+
+                    let deleteForm = document.createElement("form");
+                    deleteForm.action = "/review/delete";
+                    deleteForm.method = "post";
+                    deleteForm.style.display = "inline";
+
+                    let hidhotelId = document.createElement("input");
+                    hidhotelId.type = "hidden";
+                    hidhotelId.name = "hotelId";
+                    hidhotelId.setAttribute("value", review.hotelId );
+
+                    let hiddenReviewId = document.createElement("input");
+                    hiddenReviewId.type = "hidden";
+                    hiddenReviewId.name = "reviewId";
+                    hiddenReviewId.value = review.reviewId;
+
+                    let deleteSubmit = document.createElement("input");
+                    deleteSubmit.type = "submit";
+                    deleteSubmit.className = "btn btn-sm btn-link text-danger";
+                    deleteSubmit.value = "Delete";
+
+                    deleteForm.appendChild(hidhotelId);
+                    deleteForm.appendChild(hiddenReviewId);
+                    deleteForm.appendChild(deleteSubmit);
+
+                    rightActions.appendChild(editLink);
+                    rightActions.appendChild(deleteForm);
+
+                    deleteForm.addEventListener("submit", function (e) {
+                        e.preventDefault();
+                        let formData = new FormData(deleteForm);
+                        fetch("/review/delete", {
+                            method:"POST",
+                            headers: { "X-Requested-With": "XMLHttpRequest" },
+                            body: new URLSearchParams(formData)
+                        })
+                                .then(r=>r.json())
+                                .then(data => {
+                                    if(data) {
+                                        loadReviews(currentPage);
+                                    }else{
+                                        alert("Error deleting review in backend" + data.error);
+                                    }
+                                }).catch(err=>console.error("Error deleting:", err));
+                    });
+                }
+
+                actionsRow.appendChild(likes);
+                actionsRow.appendChild(rightActions);
+
+                card.appendChild(cardTittle);
+                cardBody.appendChild(cardRating);
+                cardBody.appendChild(reviewText);
+                cardBody.appendChild(userEl);
+                card.appendChild(cardBody);
+                card.appendChild(actionsRow);
+                reviewsContainer.appendChild(card);
+                attachLikeButtonListeners();
+                attachEditButtonListeners();
+            }
+
+            function attachLikeButtonListeners(){
+                let buttons = document.querySelectorAll(".like-button");
+                buttons.forEach(btn =>{
+                    console.log(btn);
+                    btn.removeEventListener("click", likeClickHandler);
+                    btn.addEventListener("click", likeClickHandler);
+                });
+            }
+            function attachEditButtonListeners(){
+                let buttons = document.querySelectorAll(".edit-button");
+                buttons.forEach(btn =>{
+                    console.log(btn);
+                    btn.removeEventListener("click", editClickHandler);
+                    btn.addEventListener("click", editClickHandler);
+                });
+            }
+
+            function editClickHandler(){
+                let revId = this.getAttribute("data-review-id");
+                console.log(this.getAttribute("data-review-id"));
+                fetch("/review/edit?" + new URLSearchParams({id: revId}), {
+                    headers: {
+                        "Content-Type": "application/x-www-form-urlencoded"
+                    },
+                }).then(r=>r.json())
+                        .then(data=>{
+                            if(data)
+                            {
+                                document.getElementById("editReviewId").value = data.reviewId;
+                                document.getElementById("editreviewTitle").value=data.title;
+                                document.getElementById("editreviewText").value=data.reviewText;
+
+                                editReviewModal.show();
+                            }
+                        }).catch(err=>console.error("Error unliking review ",err));
+            }
+
+
+            var map = L.map('map', {
+                center: [$hotel.ll.lat, $hotel.ll.lng],
+                zoom: 18
+            });
+            L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                maxZoom: 18,
+                attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+            }).addTo(map);
+            L.marker([$hotel.ll.lat, $hotel.ll.lng]).addTo(map);
+
+
+            function likeClickHandler(){
+                let revId = this.getAttribute("data-review-id");
+                console.log(this.getAttribute("data-review-id"));
+                fetch("/review/like", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/x-www-form-urlencoded"
+                    },
+                    body: "reviewId=" + revId
+                }).then(r=>r.json())
+                        .then(data=>{
+                            this.setAttribute("data-liked", data.liked ? "true" : "false");
+                            this.textContent=data.liked ? "Unlike" : "Like";
+                            let parentSpan = this.parentElement;
+                            loadReviews(currentPage);
+                        }).catch(err=>console.error("Error unliking review ",err));
+            }
+
+            prevPageBtn.addEventListener("click",function (){
+                currentPage = Math.max(1, currentPage-1);
+                loadReviews(currentPage);
+            });
+
+            nextPageBtn.addEventListener("click",function (){
+                currentPage = currentPage + 1;
+                loadReviews(currentPage);
+            });
+
+            editReviewForm.addEventListener("submit", function (e){
+                e.preventDefault();
+                let formData = new FormData(editReviewForm);
+                fetch("/review/edit", {
+                    method:"POST",
+                    headers: { "X-Requested-With": "XMLHttpRequest" },
+                    body: new URLSearchParams(formData)
+                })
+                        .then(r=>r.json())
+                        .then(data => {
+                            if(data) {
+
+                                editReviewModal.hide();
+                                editReviewForm.reset();
+                                loadReviews(currentPage);
+                            }else{
+                                alert("Error adding review" + data.error);
+                            }
+                        }).catch(err=>console.error("Error adding review:", err));
+            });
+            addReviewForm.addEventListener("submit", function (e){
+                e.preventDefault();
+                let formData = new FormData(addReviewForm);
+
+                fetch("/review/add", {
+                    method:"POST",
+                    headers: { "X-Requested-With": "XMLHttpRequest" },
+                    body: new URLSearchParams(formData)
+                })
+                        .then(r=>r.json())
+                        .then(data => {
+                            if(data) {
+                                let modalEl = document.getElementById("addReviewModal");
+                                let modal = bootstrap.Modal.getInstance(modalEl);
+                                modal.hide();
+                                addReviewForm.reset();
+                                loadReviews(1);
+                            }else{
+                                alert("Error adding review" + data.error);
+                            }
+                        }).catch(err=>console.error("Error adding review:", err));
+            });
+
+            loadReviews(1);
+            attachLikeButtonListeners();
+        });
+
+    </script>
+    <style>
+        body {
+            background-color: #fff;
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+        h1, label, button, a, .alert {
+            font-weight: bold;
+        }
+        .hFont{
+            font-size: 4rem;
+            padding: 0.375rem;
+        }
+        .mFont{
+            font-size: 1.75rem;
+        }
+
+        a {
+            color: #000;
+        }
+        a:hover {
+            text-decoration: none;
+        }
+        .like-button[data-liked="true"] {
+            color: red;
+        }
+    </style>
 </head>
 <body>
-<p>
-    #if($session.getAttribute("user"))
-        #set($currentUser = $session.getAttribute("user"))
-       <span style="color: cornflowerblue"> $currentUser.username </span> Here is the hotel you are looking for,
-    #end
-</p>
-<h1>$hotel.name</h1>
-<p>ID: $hotel.id</p>
-<p>Address: $hotel.streetAddress, $hotel.city, $hotel.state</p>
-<p>Average Rating: $averageRating</p>
-<p><a href="$expediaLink" target="_blank">View on Expedia</a></p>
-<p><a href="/search">Back to search</a></p>
+<div class="container-fluid vh-100 d-flex flex-column">
+    <div class="row flex-grow-1">
+        <div class="col-3 border-end bg-white d-flex flex-column justify-content-center">
 
-<h2>Reviews</h2>
-#if($reviews.size() == 0)
-<p>No reviews yet.</p>
-#else
-<ul>
-#foreach($review in $reviews)
-    <li>
-        <p>Rating: $review.ratingOverall</p>
-        <p>$review.title</p>
-        <p>$review.reviewText</p>
-        <p>By $review.userNickname on $review.reviewSubmissionDate</p>
-        #if($review.userNickname == $loggedInUser)
-            <a href="/review/edit?id=$review.reviewId">Edit</a>
-            <form action="/review/delete" method="post" style="display:inline;">
-                <input type="hidden" name="reviewId" value="$review.reviewId"/>
-                <input type="hidden" name="hotelId" value="$review.hotelId"/>
-                <input type="submit" value="Delete"/>
-            </form>
-        #end
-    </li>
-#end
-</ul>
-#end
-<h3>Add a Review</h3>
-<form action="/review/add" method="post">
-    <input type="hidden" name="hotelId" value="$hotel.id"/>
-    <label for="title">Title:</label><br>
-    <input type="text" name="title" required/><br>
-    <label for="text">Text:</label><br>
-    <textarea name="text" required></textarea><br>
-    <label for="rating">Rating:</label><br>
-    <select name="rating">
-        #foreach($i in [1..5])
-            <option value="$i">$i</option>
-        #end
-    </select><br><br>
-    <input type="submit" value="Submit Review"/>
-</form>
-<br>
-<br>
-<a href="/user/logout">Logout</a>
+            #set($currentUser = $session.getAttribute("user"))
+            <h2 class="mb-4 hFont">Hello, <span class="text-primary">$currentUser.username</span>.</h2>
+            <a href="/history/view" class="btn btn-link mb-2 fw-bold text-start">My Profile <i class="bi bi-arrow-right"></i></a>
+            <a href="/search" class="btn btn-link mb-2 fw-bold text-start">Search <i class="bi bi-arrow-right"></i></a>
+            <a href="/user/logout" class="btn btn-link mb-2 fw-bold text-start">Logout <i class="bi bi-arrow-right"></i></a>
+            <button class="btn btn-dark fw-bold" data-bs-toggle="modal" data-bs-target="#addReviewModal">Add Review</button>
+        </div>
+        <div class="col-9 bg-white overflow-scroll vh-100">
+            <div class="mb-4">
+                <h1 class="hFont">$hotel.name</h1>
+                <div class="d-flex flex-column">
+                    <div class="row">
+                    <div class="col-4 bg-white d-flex flex-column justify-content-center">
+                <p>ID: $hotel.id</p>
+                <p>Address: $hotel.streetAddress, $hotel.city, $hotel.state</p>
+                <p id="avgRatingLbl">Average Rating: $averageRating</p>
+                <p><a href="/history/click?hotelId=$hotel.id" class="btn btn-link mb-2 fw-bold text-start" target="_blank" onclick="">View on Expedia</a></p>
+                    </div>
+                    <div class="col-8 bg-white">
+                        <div id="map" style="height: 180px; width: 100%"></div>
+                    </div>
+                    </div>
+                </div>
+            </div>
+            <h3 class="mb-3">Reviews</h3>
+            <div id="noResultsMsg" class="text-danger fw-bold mb-3" style="display:none;">No reviews found</div>
+            <div id="reviewsContainer" class="container">
+                <!-- AJAX should populate this-->
+            </div>
+            <div class="d-flex justify-content-between mt-3">
+                <button id="prevPageBtn" class="btn btn-secondary" disabled>Previous</button>
+                <button id="nextPageBtn" class="btn btn-secondary" disabled>Next</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="addReviewModal" tabindex="-1" aria-labelledby="addReviewModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addReviewModalLabel">Add Review</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="addReviewForm">
+                    <input type="hidden" name="hotelId" value="$hotel.id"/>
+                    <div class="mb-3">
+                        <label for="reviewTitle" class="form-label">Title:</label>
+                        <input type="text" class="form-control" id="reviewTitle" name="title" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="reviewText" class="form-label">Text:</label>
+                        <textarea class="form-control" id="reviewText" name="text" required></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label for="reviewRating" class="form-label">Rating:</label>
+                        <select class="form-select" id="reviewRating" name="rating" required>
+                            #foreach($i in [1..5])
+                                <option value="$i">$i</option>
+                            #end
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-dark w-100">Submit</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="addReviewModal" tabindex="-1" aria-labelledby="addReviewModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addReviewModalLabel">Add Review</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="addReviewForm">
+                    <input type="hidden" name="hotelId" value="$hotel.id"/>
+                    <div class="mb-3">
+                        <label for="reviewTitle" class="form-label">Title:</label>
+                        <input type="text" class="form-control" id="reviewTitle" name="title" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="reviewText" class="form-label">Text:</label>
+                        <textarea class="form-control" id="reviewText" name="text" required></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label for="reviewRating" class="form-label">Rating:</label>
+                        <select class="form-select" id="reviewRating" name="rating" required>
+                            #foreach($i in [1..5])
+                                <option value="$i">$i</option>
+                            #end
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-dark w-100">Submit</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="editReviewModal" tabindex="-1" aria-labelledby="editReviewModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editReviewModalLabel">Add Review</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="editReviewForm">
+                    <input type="hidden" id="editReviewId" name="reviewId"/>
+                    <div class="mb-3">
+                        <label for="editreviewTitle" class="form-label">Title:</label>
+                        <input type="text" class="form-control" id="editreviewTitle" name="title" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="reviewText" class="form-label">Text:</label>
+                        <textarea class="form-control" id="editreviewText" name="reviewText" required></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-dark w-100">Submit</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
 </body>
 </html>

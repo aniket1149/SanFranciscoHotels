@@ -1,21 +1,75 @@
 <html>
 <head>
+    $bootstrap
     <title>My History</title>
+    <style>
+        body {
+            background-color: #fff;
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+        h1, label, button, a, .alert {
+            font-weight: bold;
+        }
+        .hFont{
+            font-size: 4rem;
+            padding: 0.375rem;
+        }
+        .mFont{
+            font-size: 1.75rem;
+        }
+
+        a {
+            color: #000;
+        }
+        a:hover {
+            text-decoration: none;
+        }
+    </style>
+
 </head>
 <body>
-<h1>Recent Search History</h1>
-<table border="1">
-    <tr>
-        <th>Hotel Name</th>
-        <th>Expedia Link</th>
-        <th>Last Clicked Time</th>
-    </tr>
-    #foreach($item in $historyItems)
-        <tr>
-            <td>$item.hotelName</td>
-            <td><a href="$item.link" target="_blank">Expedia</a></td>
-            <td>$item.time</td>
-        </tr>
-    #end
 
+<div class="container-fluid vh-100 d-flex flex-column">
+    <div class="row flex-grow-1">
+        <div class="col-3 border-end bg-white d-flex flex-column justify-content-center">
+            #set($currentUser = $session.getAttribute("user"))
+            <h2 class="mb-4 hFont">Hello, <span class="text-primary">$currentUser.username</span>.</h2>
+
+            <a href="/search" class="btn btn-link mb-2 fw-bold text-start">Search <i class="bi bi-arrow-right"></i></a>
+            <a href="/user/logout" class="btn btn-link mb-2 fw-bold text-start">Logout <i class="bi bi-arrow-right"></i></a>
+            <a href="/history/delete?username=$currentUser.username">
+                <button
+                        class="btn btn-danger mb-2 fw-bold text-start" #if($historyItems.size() == 0) disabled
+                #end >Delete Search History <i class="bi bi-arrow-right"></i>
+                </button>
+            </a>
+
+        </div>
+        <div class="col-9 bg-white overflow-scroll vh-100">
+            <div class="sticky-top vw-100 bg-white px-4 py-2">
+                <h1 class="mb-2 hFont fw-bold">Your Visited Links.</h1>
+            </div>
+            <h4>History since last login : $currentUser.lastLogin</h4>
+            <table class="table">
+                <thead>
+                <tr>
+                    <th scope="col">Hotel Name</th>
+                    <th scope="col">Expedia Link</th>
+                    <th scope="col">Last Clicked Time</th>
+                </tr>
+                </thead>
+                <tbody>
+                    #foreach($item in $historyItems)
+                    <tr>
+                        <td><a href="/hotel/$item.hotelId" class ="fw-normal" target="_blank">$item.hotelName</a></td>
+                        <td><a href="$item.link" target="_blank">Expedia</a></td>
+                        <td>$item.time</td>
+                    </tr>
+                    #end
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
 </body>
+</html>
