@@ -24,6 +24,10 @@ public class DatabaseUtil {
         return dbHandler;
     }
 
+    /**
+     * Creates Table SQL if does not exits using SQL.
+     * @param tableName
+     */
     public void createTable(String tableName) {
                 try{
                     String createTable = null;
@@ -66,6 +70,10 @@ public class DatabaseUtil {
         return config;
     }
 
+    /**
+     * @return Connection Instance
+     * @throws SQLException
+     */
     public Connection getConnection() throws SQLException {
        try{
            return DriverManager.getConnection(uri, config.getProperty("username"), config.getProperty("password"));

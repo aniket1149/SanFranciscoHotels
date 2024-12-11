@@ -18,9 +18,6 @@ public class TravelServerDriver {
     private static final HistoryRepository historyRepository = new HistoryRepositoryImpl();
 
     public static void main(String[] args)  {
-        // FILL IN CODE, and add more classes as needed
-
-
         HotelReviewService hotelReviewService = new HotelReviewService(hotelRepository, reviewRepository, userRepository);
         hotelReviewService.loadData(args);
         HotelCollection hotelCollection = hotelReviewService.getHotelCollection();
@@ -32,7 +29,6 @@ public class TravelServerDriver {
             dataObjects.add(reviewCollection);
         }
         server.addServlets(dataObjects);
-
         try {
             server.start();
         } catch (Exception e) {

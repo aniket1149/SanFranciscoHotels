@@ -29,10 +29,8 @@ import java.util.*;
  * Review Servlet to serve reviews for the hotel.
  * Handles Add, Update, Delete Reviews.
  * **/
-
 public class ReviewServlet extends HttpServlet {
     private static final Logger logger = LogManager.getLogger(ReviewServlet.class);
-    private VelocityTemplateEngine templateEngine = new VelocityTemplateEngine();
     private ReviewRepository reviewRepository;
     private static int getAllCount=0;
     private ReviewServlet() {

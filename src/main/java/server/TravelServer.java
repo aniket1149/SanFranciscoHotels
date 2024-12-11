@@ -37,37 +37,16 @@ public class TravelServer {
     }
 
     /**
-     * AddServlets maps the collections to the depnedent servlets and intializes the servlet
-     * **/
-
+     * Adds servlets to the travelServer
+     * @param objs
+     */
     public void addServlets(List<Object> objs){
-        /**
-         * TO-DO
-         * **/
         handler.setContextPath("/");
         handler.addServlet(new ServletHolder(new UserServlet(userRepository)), "/user/*");
         handler.addServlet(new ServletHolder(new HistoryServlet(historyRepository, hotelRepository)), "/history/*");
         handler.addServlet(new ServletHolder(new SearchServlet(hotelRepository)), "/search/*");
         handler.addServlet(new ServletHolder(new ReviewServlet(reviewRepository)), "/review/*");
         handler.addServlet(new ServletHolder(new HotelServlet(hotelRepository, reviewRepository)), "/hotel/*");
-
-//        HotelCollection hotelCollection = null;
-//        ThreadSafeInvertedIndex reviewCollection=null;
-//        for(Object obj : objs){
-//            if(obj instanceof HotelCollection){
-//                hotelCollection = (HotelCollection) obj;
-//            }else if(obj instanceof ThreadSafeInvertedIndex){
-//                reviewCollection = (ThreadSafeInvertedIndex) obj;
-//                ReviewServlet reviewServlet = new ReviewServlet(reviewRepository);
-//                ServletHolder reviewServletHolder = new ServletHolder(reviewServlet);
-//            }else{
-//                logger.error("Error intializing the servlets");
-//                return;
-//            }
-//
-//        }
-//        if(hotelCollection != null && reviewCollection != null){
-//        }
     }
 
     public void start() throws Exception {

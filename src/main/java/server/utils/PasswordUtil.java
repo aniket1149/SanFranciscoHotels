@@ -9,6 +9,9 @@ import java.security.SecureRandom;
 
 public class PasswordUtil {
     private static final Logger logger = LogManager.getLogger(PasswordUtil.class);
+    /**
+     * Generates Salt required for hashing
+     * */
     public static String generateSalt(){
         SecureRandom sr = new SecureRandom();
         byte[] salt = new byte[16];
@@ -26,6 +29,12 @@ public class PasswordUtil {
         return buf.toString();
     }
 
+    /**
+     * Generates a random hashed password using salt.
+     * @param password
+     * @param salt
+     * @return hashedString
+     */
     public static String hashPassword(String password, String salt) {
         logger.info("Hashing the password now with provided password and salt");
         try {
@@ -38,6 +47,14 @@ public class PasswordUtil {
             return "";
         }
     }
+
+    /**
+     * Verifies password and user authenticity
+     * @param password
+     * @param storedHash
+     * @param salt
+     * @return boolean
+     */
     public static boolean verifyPassword(String password, String storedHash, String salt) {
         String hashedPassword = hashPassword(password, salt);
         return hashedPassword != null && hashedPassword.equals(storedHash);

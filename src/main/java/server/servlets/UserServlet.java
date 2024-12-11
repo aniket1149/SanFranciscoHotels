@@ -20,7 +20,6 @@ import java.util.regex.Pattern;
 /**
  * User servlet handles the login, register endpoints for the server.
  * **/
-
 public class UserServlet extends HttpServlet {
     private VelocityTemplateEngine templateEngine = new VelocityTemplateEngine();
     private UserRepository userRepository;

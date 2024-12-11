@@ -35,6 +35,7 @@ public class PreparedStatements {
                      likes INT NOT NULL DEFAULT 0,
                      foreign key (hotel_id) references hotels(id));
             """;
+    /** For creating the review_likes table */
     public static final String CREATE_REVIEW_LIKES = """
             CREATE TABLE IF NOT EXISTS review_likes (
                 review_id VARCHAR(255),
@@ -43,6 +44,7 @@ public class PreparedStatements {
                 FOREIGN KEY (review_id) REFERENCES reviews(id)
             );
             """;
+    /** For creating the history table */
     public static final String CREATE_HISTORY_TABLE= """
             CREATE TABLE IF NOT EXISTS history (
             hotel_id varchar(50),
@@ -51,9 +53,8 @@ public class PreparedStatements {
             primary key (hotel_id, user_name),
             foreign key (hotel_id) references hotels(id));
             """;
-    /** For geting the user details */
+
     public static final String GET_USER = "SELECT * FROM users WHERE username = ?";
-    /** For geting the hotel details */
     public static final String GET_HOTEL = "SELECT * FROM hotels WHERE id = ?";
     public static final String GET_HOTEL_BYNAME = "SELECT * FROM hotels WHERE name like ?";
     public static final String GET_HOTELS = """
@@ -70,7 +71,6 @@ public class PreparedStatements {
             FROM hotels h
             LEFT JOIN t1 on h.id = t1.hotel_id;
             """;
-            //"SELECT * FROM hotels";
 
     public static final String GET_USER_HISTORY = """
             SELECT h.name, h.link, his.*
@@ -80,10 +80,8 @@ public class PreparedStatements {
             WHERE his.user_name = ?
             ORDER BY his.time DESC;
             """;
-    /** For geting the review details */
     public static final String GET_REVIEW = "SELECT * FROM reviews WHERE id = ?";
     public static final String GET_LAT_LNG= "SELECT longitude, latitude, name from hotels";
-    /** For geting the reviews for hotelid  */
     public static final String GET_REVIEW_HOTELID = "SELECT * FROM reviews WHERE hotel_id = ?";
     public static final String GET_REVIEW_LIKED = "SELECT 1 FROM review_likes WHERE review_id = ? AND username = ?";
     public static final String GET_REVIEW_COUNT_FOR_HOTEL = "SELECT count(*) as total FROM reviews where hotel_id = ?";
@@ -106,7 +104,7 @@ public class PreparedStatements {
             """;
     public static final String GET_ALL_LIKES_FOR_USER = "SELECT review_id FROM review_likes WHERE username = ?";
     public static final String GET_AVG_RATING = " SELECT CAST(AVG(rating) AS DECIMAL(3,2)) FROM reviews WHERE hotel_id = ?";
-    /** For inserting the user details */
+
     public static final String INSERT_USER = "INSERT ignore INTO users (username, hashed_password, salt) VALUES (?, ?, ?)";
     public static final String INSERT_HOTEL = "INSERT ignore INTO hotels(id, name, address, city, longitude, latitude, state, link) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
     public static final String INSERT_REVIEW_LIKES = "INSERT INTO review_likes (review_id, username) VALUES (?, ?)";
