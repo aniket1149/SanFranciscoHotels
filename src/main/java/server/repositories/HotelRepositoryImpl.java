@@ -1,5 +1,7 @@
 package server.repositories;
 
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
 import hotelapp.models.GeoTags;
 import hotelapp.models.HotelDTO;
 import org.apache.logging.log4j.LogManager;
@@ -89,6 +91,27 @@ public class HotelRepositoryImpl implements HotelRepository {
             logger.error(e);
         }
         return false;
+    }
+
+    @Override
+    public List<JsonObject> fetchLatLang() {
+
+        List<JsonObject> res = new ArrayList<>();
+        String sql = PreparedStatements.GET_LAT_LNG;
+        try(Connection conn = databaseUtil.getConnection();
+            PreparedStatement ps = conn.prepareStatement(sql)){
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()){
+                JsonObject o = new JsonObject();
+                o.addProperty("name", rs.getString("name"));
+                o.addProperty("long", rs.getString("longitude"));
+                o.addProperty("lat", rs.getString("latitude"));
+                res.add(o);
+            }
+        }catch (SQLException e){
+            logger.error("Error getting lat lng", e);
+        }
+        return res;
     }
 
     @Override

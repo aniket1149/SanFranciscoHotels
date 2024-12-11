@@ -82,6 +82,7 @@ public class PreparedStatements {
             """;
     /** For geting the review details */
     public static final String GET_REVIEW = "SELECT * FROM reviews WHERE id = ?";
+    public static final String GET_LAT_LNG= "SELECT longitude, latitude, name from hotels";
     /** For geting the reviews for hotelid  */
     public static final String GET_REVIEW_HOTELID = "SELECT * FROM reviews WHERE hotel_id = ?";
     public static final String GET_REVIEW_LIKED = "SELECT 1 FROM review_likes WHERE review_id = ? AND username = ?";

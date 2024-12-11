@@ -1,5 +1,8 @@
 package server.servlets;
 
+import com.google.gson.Gson;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
 import hotelapp.models.HotelDTO;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServlet;
@@ -38,6 +41,12 @@ public class SearchServlet extends HttpServlet {
             return;
         }
 
+        String action = request.getPathInfo();
+        if(action.equals("/getLatLang")) {
+            fetchLatLang(request, response);
+            return;
+        }
+
         String query = request.getParameter("query");
         String searchType = request.getParameter("searchType");
 
@@ -67,5 +76,11 @@ public class SearchServlet extends HttpServlet {
         }
         model.put("results", results);
         templateEngine.render("templates/search.vm", model, request, response);
+    }
+
+    private void fetchLatLang(HttpServletRequest request, HttpServletResponse response) throws IOException {
+            List<JsonObject> results = hotelRepository.fetchLatLang();
+            response.setContentType("application/json");
+            response.getWriter().write(new Gson().toJson(results));
     }
 }
