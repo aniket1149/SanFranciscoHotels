@@ -55,8 +55,36 @@ public class PreparedStatements {
             """;
 
     public static final String GET_USER = "SELECT * FROM users WHERE username = ?";
-    public static final String GET_HOTEL = "SELECT * FROM hotels WHERE id = ?";
-    public static final String GET_HOTEL_BYNAME = "SELECT * FROM hotels WHERE name like ?";
+    public static final String GET_HOTEL = """
+            with t1 as (
+                        select CAST(AVG(rating) AS DECIMAL(3,2)) as ratings,
+                        hotel_id from reviews
+                        group by hotel_id
+                        )
+                        select h.*,
+                        CASE
+                            WHEN t1.ratings IS NULL THEN 0.00
+                            ELSE t1.ratings
+                        END AS ratings
+                        FROM hotels h
+                        LEFT JOIN t1 on h.id = t1.hotel_id
+                        where h.id = ?
+            """;
+    public static final String GET_HOTEL_BYNAME = """
+            with t1 as (
+                        select CAST(AVG(rating) AS DECIMAL(3,2)) as ratings,
+                        hotel_id from reviews
+                        group by hotel_id
+                        )
+                        select h.*,
+                        CASE
+                            WHEN t1.ratings IS NULL THEN 0.00
+                            ELSE t1.ratings
+                        END AS ratings
+                        FROM hotels h
+                        LEFT JOIN t1 on h.id = t1.hotel_id
+                        where h.name like ?
+            """;
     public static final String GET_HOTELS = """
             with t1 as (
             select CAST(AVG(rating) AS DECIMAL(3,2)) as ratings,
