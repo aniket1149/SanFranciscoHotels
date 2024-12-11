@@ -1,5 +1,7 @@
 package server.repositories;
 import hotelapp.models.ReviewDTO;
+
+import java.util.List;
 import java.util.Set;
 
 public interface ReviewRepository {
@@ -13,4 +15,6 @@ public interface ReviewRepository {
     boolean addLike(String reviewId, String username);
     boolean removeLike(String reviewId, String username);
     Set<String> getLikedReviewsForUser(String username);
+    List<ReviewDTO> getPaginatedReviews(String hotelId, String userName, int limit, int offset);
+    String getCountforReviews(String hotelId);
 }
