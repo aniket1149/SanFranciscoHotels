@@ -85,7 +85,26 @@ public class PreparedStatements {
     /** For geting the reviews for hotelid  */
     public static final String GET_REVIEW_HOTELID = "SELECT * FROM reviews WHERE hotel_id = ?";
     public static final String GET_REVIEW_LIKED = "SELECT 1 FROM review_likes WHERE review_id = ? AND username = ?";
+    public static final String GET_REVIEW_COUNT_FOR_HOTEL = "SELECT count(*) as total FROM reviews where hotel_id = ?";
+    public static final String GET_PAGINATED_REVIEW= """
+            SELECT
+                r.*,
+                CASE
+                    WHEN rl.username IS NOT NULL THEN 'true'
+                    ELSE 'false'
+                END AS liked
+            FROM
+                reviews r
+            LEFT JOIN
+                review_likes rl
+            ON
+                r.id = rl.review_id and r.hotel_id=? and rl.username=?
+            where
+            r.hotel_id = ?
+            ORDER BY date desc LIMIT ? OFFSET ?;
+            """;
     public static final String GET_ALL_LIKES_FOR_USER = "SELECT review_id FROM review_likes WHERE username = ?";
+    public static final String GET_AVG_RATING = " SELECT CAST(AVG(rating) AS DECIMAL(3,2)) FROM reviews WHERE hotel_id = ?";
     /** For inserting the user details */
     public static final String INSERT_USER = "INSERT ignore INTO users (username, hashed_password, salt) VALUES (?, ?, ?)";
     public static final String INSERT_HOTEL = "INSERT ignore INTO hotels(id, name, address, city, longitude, latitude, state, link) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
@@ -112,4 +131,5 @@ public class PreparedStatements {
 
     public static final String DELETE_REVIEW_LIKES ="DELETE FROM review_likes WHERE review_id = ? AND username = ?";
     public static final String DELETE_REVIEW = "DELETE FROM reviews WHERE id = ? and hotel_id = ?;";
+    public static final String DELETE_HISTORY = "DELETE FROM history WHERE user_name = ?";
 }
