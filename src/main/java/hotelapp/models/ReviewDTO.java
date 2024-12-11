@@ -13,6 +13,8 @@ public class ReviewDTO implements Comparable<ReviewDTO> {
     private String reviewText;
     private String reviewSubmissionDate;
     private int likes;
+    private String liked;
+    private Double averageRating;
 
     public String getReviewSubmissionDate() {
         return reviewSubmissionDate;

@@ -207,4 +207,63 @@ public class ReviewRepositoryImpl implements ReviewRepository {
         }
         return likedReviews;
     }
+
+    @Override
+    public List<ReviewDTO> getPaginatedReviews(String hotelId,String userName, int limit, int offset) {
+        String sql = PreparedStatements.GET_PAGINATED_REVIEW;
+        String sql0 = PreparedStatements.GET_AVG_RATING;
+
+        List<ReviewDTO> reviews = new ArrayList<>();
+        try(Connection conn = databaseUtil.getConnection();
+            PreparedStatement ps = conn.prepareStatement(sql);
+            PreparedStatement ps0 = conn.prepareStatement(sql0);
+        ){
+            ps0.setString(1, hotelId);
+            ResultSet rs0 = ps0.executeQuery();
+            Double f = 0.00;
+            if(rs0.next()){
+                f = rs0.getDouble(1);
+            }
+            ps.setString(1, hotelId);
+            ps.setString(2, userName);
+            ps.setString(3, hotelId);
+            ps.setInt(4, limit);
+            ps.setInt(5, offset);
+            ResultSet rs = ps.executeQuery();
+            while(rs.next()){
+                ReviewDTO reviewDTO = new ReviewDTO();
+                reviewDTO.setReviewId(rs.getString("id"));
+                reviewDTO.setHotelId(rs.getString("hotel_id"));
+                reviewDTO.setTitle(rs.getString("title"));
+                reviewDTO.setReviewText(rs.getString("reviewText"));
+                reviewDTO.setUserNickname(rs.getString("user"));
+                reviewDTO.setReviewSubmissionDate(rs.getString("date"));
+                reviewDTO.setLikes(rs.getInt("likes"));
+                reviewDTO.setRatingOverall(rs.getDouble("rating"));
+                reviewDTO.setLiked(rs.getString("liked"));
+                reviewDTO.setAverageRating(f);
+                reviews.add(reviewDTO);
+            }
+        }catch (SQLException e){
+            logger.error("Error in getting paginated reviews",e);
+        }
+        return reviews;
+    }
+
+    @Override
+    public String getCountforReviews(String hotelId) {
+       String sql = PreparedStatements.GET_REVIEW_COUNT_FOR_HOTEL;
+       try(Connection conn = databaseUtil.getConnection();
+        PreparedStatement ps = conn.prepareStatement(sql);
+       ){
+           ps.setString(1, hotelId);
+           ResultSet rs = ps.executeQuery();
+           if(rs.next()){
+               return rs.getString("total");
+           }
+       }catch (SQLException e){
+           logger.error("Error in getting review count",e);
+       }
+       return null;
+    }
 }
