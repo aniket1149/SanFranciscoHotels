@@ -49,7 +49,12 @@
             <div class="sticky-top vw-100 bg-white px-4 py-2">
                 <h1 class="mb-2 hFont fw-bold">Your Visited Links.</h1>
             </div>
-            <h4>History since last login : $currentUser.lastLogin</h4>
+            <h4>#if($currentUser.lastLogin)
+                History since last login : $currentUser.lastLogin
+                #else
+                Your Search History, First Login.
+    #end
+     </h4>
             <table class="table">
                 <thead>
                 <tr>

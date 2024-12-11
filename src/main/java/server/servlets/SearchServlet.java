@@ -42,9 +42,11 @@ public class SearchServlet extends HttpServlet {
         }
 
         String action = request.getPathInfo();
+        if(null != action) {
         if(action.equals("/getLatLang")) {
             fetchLatLang(request, response);
             return;
+        }
         }
 
         String query = request.getParameter("query");

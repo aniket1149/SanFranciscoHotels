@@ -59,7 +59,23 @@ public class ReviewServlet extends HttpServlet {
             case "/edit":
                 showEditForm(request, response);
                 break;
+            case "/total":
+                totalPages(request, response);
+                break;
         }
+    }
+
+    private void totalPages(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        String hotelId = request.getParameter("hotelId");
+        if (hotelId == null || hotelId.equals("")) {
+            System.out.println("hotelId is null or empty");
+            response.sendRedirect("/search");
+            return;
+        }
+        JsonObject jsonObject = new JsonObject();
+        jsonObject.addProperty("total", reviewRepository.getCountforReviews(hotelId));
+        response.setContentType("application/json");
+        response.getWriter().write(jsonObject.toString());
     }
 
     private void handlePaginatedReviews(HttpServletRequest request, HttpServletResponse response) throws IOException {
@@ -74,7 +90,9 @@ public class ReviewServlet extends HttpServlet {
             System.out.println("hotelId is null or empty");
             return;
         }
+
         final int limit = 2;
+
         int page = 1;
         String pageParam = request.getParameter("page");
         if (pageParam != null) {
@@ -89,6 +107,7 @@ public class ReviewServlet extends HttpServlet {
         if(page==1){
             getAllCount  = Integer.parseInt(reviewRepository.getCountforReviews(hotelId));
         }
+        int totalPages = (int) Math.ceil(getAllCount/2);
         int offset = (page - 1) * limit;
         int remaining = getAllCount-limit;
         getAllCount = remaining;
@@ -108,6 +127,8 @@ public class ReviewServlet extends HttpServlet {
             jsonObject.addProperty("hasPrevious", true);
         }else{
             jsonObject.addProperty("hasPrevious", false);
+        }if((remaining+Math.abs(offset))<Integer.parseInt(reviewRepository.getCountforReviews(hotelId))){
+            jsonObject.addProperty("hasNext", true);
         }
         jsonObject.add("reviews", gson.toJsonTree(reviews));
         response.getWriter().println(jsonObject);

@@ -20,17 +20,30 @@
             const avgRatingLabel = document.getElementById("avgRatingLbl");
             const editReviewForm = document.getElementById("editReviewForm");
             const editReviewModal = new bootstrap.Modal(document.getElementById('editReviewModal'), {});
-
-
-
-
+            let totalPages = 0;
             let currentPage = 1;
             const limit = 2;
+            function getTotalReviews() {
+                let params = new URLSearchParams();
+                params.append("hotelId", $hotel.id);
+                fetch("/review/total?"+params.toString(),{
+                    headers: {"X-Requested-With": "XMLHttpRequest"}
+                })
+                        .then(r=>r.json())
+                        .then(data=>{
+                            if(data){
+                                totalPages = Math.ceil(data.total/limit);
+                                console.log("fetched total pages "+ totalPages);
+                            }
+                        }).catch(err=>console.error(err));
+            }
+
             if(currentPage === 1){
                 prevPageBtn.disabled=true;
                 nextPageBtn.disabled=false;
             }
             function loadReviews(page) {
+                getTotalReviews();
                 let params = new URLSearchParams();
                 params.append("hotelId", $hotel.id);
                 params.append("page", page);
@@ -45,20 +58,35 @@
                             noResultsMag.style.display ="none";
                             if(data.noResults){
                                 noResultsMag.style.display ="block";
-                                prevPageBtn.disabled = true;
-                                nextPageBtn.disabled = true;
                                 return;
                             }
                             data.reviews.forEach(review => {
                                 createReviewUi(review);
                                 avgRatingLabel.innerHTML=`Average ratings : ${review.averageRating}`;
                             })
-                            nextPageBtn.disabled=!data.hasNext;
-                            prevPageBtn.disabled=!data.hasPrevious;
+
+
+                            if (currentPage === 1) {
+                                console.log(`On first page: ${currentPage} of ${totalPages}`);
+                                prevPageBtn.disabled = true;
+                                nextPageBtn.disabled = currentPage === totalPages;
+                            } else if (currentPage === totalPages) {
+                                console.log(`On last page: ${currentPage} of ${totalPages}`);
+                                prevPageBtn.disabled = false;
+                                nextPageBtn.disabled = true;
+                            } else {
+                                console.log(`On middle page: ${currentPage} of ${totalPages}`);
+                                prevPageBtn.disabled = false;
+                                nextPageBtn.disabled = false;
+                            }
+
+                            if (!totalPages || totalPages === 0) {
+                                console.log(`No pages available. Disabling both buttons.`);
+                                prevPageBtn.disabled = true;
+                                nextPageBtn.disabled = true;
+                            }
+
                         }).catch(err => console.error(err));
-
-
-
             }
 
             ##<div class="card w-100">
