@@ -17,6 +17,7 @@ public class HotelDTO implements Comparable{
     private String state;
     private GeoTags ll;
     private String link;
+    private String rating;
 
     //private Object ll;
 

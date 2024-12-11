@@ -50,7 +50,7 @@ public class HotelServlet extends HttpServlet {
         HotelDTO hotel = hotelRepository.findHotelById(hotelId);
 
         if (hotel == null) {
-            response.sendError(HttpServletResponse.SC_NOT_FOUND, "Hotel not found");
+            response.sendRedirect("/search");
             return;
         }
         HttpSession session = request.getSession();

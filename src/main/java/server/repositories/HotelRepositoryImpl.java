@@ -106,6 +106,7 @@ public class HotelRepositoryImpl implements HotelRepository {
                 h.setStreetAddress(rs.getString("address"));
                 h.setState(rs.getString("state"));
                 h.setLl(new GeoTags(rs.getString("Longitude"), rs.getString("Latitude")));
+                h.setRating(rs.getString("ratings"));
                 hotels.add(h);
             }
         }catch (SQLException e){
